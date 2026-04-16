@@ -84,6 +84,20 @@ function addXP(amount, subject = null) {
     updateUI();
 }
 
+function checkBadges() {
+    const xp = state.xp;
+    const newBadges = [];
+    if (xp >= 50 && !state.badges.includes('🌱')) newBadges.push('🌱');
+    if (xp >= 200 && !state.badges.includes('⚡')) newBadges.push('⚡');
+    if (xp >= 500 && !state.badges.includes('🏆')) newBadges.push('🏆');
+    if (xp >= 1000 && !state.badges.includes('👑')) newBadges.push('👑');
+    if (state.tasksCompleted >= 5 && !state.badges.includes('✅')) newBadges.push('✅');
+    if (newBadges.length > 0) {
+        state.badges.push(...newBadges);
+        localStorage.setItem('study_badges', JSON.stringify(state.badges));
+    }
+}
+
 // --- Navigation ---
 function showSection(sectionId) {
     document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
@@ -344,8 +358,26 @@ function checkQuizAnswer(selected, correct, subject) {
 }
 
 function closeQuiz() { 
-    document.getElementById('quiz-modal').style.display = 'none'; 
-    alert('Test tamamlandı! Harikasın! 🌟');
+    document.getElementById('quiz-modal').style.display = 'none';
+    showToast('Test tamamlandı! Harikasın! 🌟');
+}
+
+function showToast(message) {
+    const existing = document.getElementById('toast-msg');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.id = 'toast-msg';
+    toast.style.cssText = `
+        position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%);
+        background: linear-gradient(135deg, #00d2ff, #9d50bb);
+        color: white; padding: 12px 24px; border-radius: 20px;
+        font-weight: 800; font-size: 0.95rem; z-index: 9999;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        animation: fadeIn 0.3s ease;
+    `;
+    toast.innerText = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
 }
 
 // --- Profile & Backup ---
@@ -432,7 +464,11 @@ function renderChart() {
 function renderBadges() {
     const container = document.getElementById('badges-display');
     if (!container) return;
-    container.innerHTML = `Rozetler yakında burada...`;
+    if (state.badges.length === 0) {
+        container.innerHTML = '<span style="opacity:0.5; font-size:0.85rem;">Rozet kazanmak için XP topla! 🌟</span>';
+    } else {
+        container.innerHTML = state.badges.map(b => `<span style="font-size:2rem; margin-right:8px;">${b}</span>`).join('');
+    }
 }
 
 function addTask() { 
