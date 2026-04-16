@@ -39,14 +39,18 @@ window.onload = () => {
 
 // --- Core UI & Stats ---
 function updateUI() {
-    document.getElementById('stats-xp').innerText = state.xp;
-    document.getElementById('stats-tasks').innerText = state.tasksCompleted;
-    document.getElementById('stats-time').innerText = `${state.studyTime} dk`;
-    document.getElementById('stats-coins').innerText = state.coins;
-    document.getElementById('coin-count').innerText = state.coins;
-    
-    document.getElementById('sidebar-avatar').innerText = state.activeAvatar;
-    document.getElementById('profile-avatar').innerText = state.activeAvatar;
+    const safeSetText = (id, text) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = text;
+    };
+
+    safeSetText('stats-xp', state.xp);
+    safeSetText('stats-tasks', state.tasksCompleted);
+    safeSetText('stats-time', `${state.studyTime} dk`);
+    safeSetText('stats-coins', state.coins);
+    safeSetText('coin-count', state.coins);
+    safeSetText('sidebar-avatar', state.activeAvatar);
+    safeSetText('profile-avatar', state.activeAvatar);
 
     updateLevel();
     renderBadges();
@@ -56,7 +60,8 @@ function updateUI() {
 
 function updateLevel() {
     state.level = Math.floor(state.xp / 100) + 1;
-    document.getElementById('user-level').innerText = `Seviye ${state.level}`;
+    const el = document.getElementById('user-level');
+    if (el) el.innerText = `Seviye ${state.level}`;
 }
 
 function addXP(amount, subject = null) {

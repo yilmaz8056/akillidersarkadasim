@@ -106,9 +106,7 @@
 
                     <div class="quest-card stat-card">
                         <div class="stat-label">Günün Görevleri</div>
-                        <div id="daily-quests-list" class="quest-list">
-                            <!-- Quests injected here -->
-                        </div>
+                        <div id="daily-quests-list" class="quest-list"></div>
                     </div>
                 </div>
 
@@ -117,13 +115,9 @@
                     <div id="weekly-chart" class="svg-chart"></div>
                 </div>
 
-                <div class="exam-countdown-container" id="exam-widget">
-                    <!-- Exam countdown will be injected here -->
-                </div>
+                <div class="exam-countdown-container" id="exam-widget"></div>
 
-                <div class="badges-row" id="badges-display">
-                    <!-- Badges injected here -->
-                </div>
+                <div class="badges-row" id="badges-display"></div>
             </section>
 
             <!-- Lessons Section -->
@@ -132,9 +126,8 @@
                     <h2>Derslerin</h2>
                     <p>Hangi derse odaklanmak istersin?</p>
                 </div>
-                <div class="subject-grid" id="subject-grid">
-                    <!-- Subject cards injected via JS for XP support -->
-                </div>
+                <!-- CRITICAL: Subject grid content will be injected by app.js -->
+                <div class="subject-grid" id="subject-grid"></div>
             </section>
 
             <!-- Timer Section -->
@@ -163,9 +156,7 @@
                     <h2>Kahraman Pazarı</h2>
                     <p>XP'lerinle havalı eşyalar al!</p>
                 </div>
-                <div class="market-grid" id="market-grid">
-                    <!-- Market items injected here -->
-                </div>
+                <div class="market-grid" id="market-grid"></div>
             </section>
 
             <!-- Profile & Settings Section -->
@@ -203,11 +194,8 @@
                 </div>
             </section>
 
-            <!-- Tasks, Flashcards remain similar but sections logic needs visibility -->
             <section id="tasks" class="section">
-                <div class="header-row">
-                    <h2>Görevlerin</h2>
-                </div>
+                <div class="header-row"><h2>Görevlerin</h2></div>
                 <div class="task-input-row">
                     <input type="text" id="task-input" class="input-glass" placeholder="Yeni görev...">
                     <button class="btn btn-primary" onclick="addTask()">Ekle</button>
@@ -216,9 +204,7 @@
             </section>
 
             <section id="flashcards" class="section">
-                <div class="header-row">
-                    <h2>Kartlarım</h2>
-                </div>
+                <div class="header-row"><h2>Kartlarım</h2></div>
                 <div class="card-input-row">
                     <input type="text" id="card-front" class="input-glass" placeholder="Ön yüz">
                     <input type="text" id="card-back" class="input-glass" placeholder="Arka yüz">
@@ -226,20 +212,16 @@
                 </div>
                 <div id="flashcards-grid" class="flashcards-grid"></div>
             </section>
-
         </main>
     </div>
 
-    <!-- Quiz Modal -->
     <div id="quiz-modal" class="modal">
         <div class="modal-content stat-card">
             <span class="close" onclick="closeQuiz()">&times;</span>
-            <div id="quiz-body">
-                <!-- Quiz content here -->
-            </div>
+            <div id="quiz-body"></div>
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=3.6"></script>
 </body>
 </html>
