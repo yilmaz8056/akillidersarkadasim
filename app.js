@@ -109,14 +109,18 @@ function renderSubjectCards() {
         const lv = Math.floor(xp / 50) + 1;
         const progress = (xp % 50) * 2;
         return `
-            <div class="subject-card" onclick="startSubject('${sub}')">
-                <span class="subject-icon">${SUBJECT_ICONS[sub]}</span>
-                <h3>${sub}</h3>
-                <p>Lv. ${lv}</p>
-                <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; margin-top:10px;">
-                    <div style="width:${progress}%; height:100%; background:var(--accent-blue); border-radius:3px;"></div>
+            <div class="subject-card">
+                <div onclick="startSubject('${sub}')" style="cursor:pointer;">
+                    <span class="subject-icon">${SUBJECT_ICONS[sub]}</span>
+                    <h3>${sub}</h3>
+                    <p style="opacity:0.7; font-size:0.85rem;">Seviye ${lv}</p>
+                    <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; margin: 12px 0;">
+                        <div style="width:${progress}%; height:100%; background:var(--accent-blue); border-radius:3px; transition: 0.3s;"></div>
+                    </div>
                 </div>
-                <button class="btn btn-outline" style="padding:5px 15px; font-size:0.7rem; margin-top:10px;" onclick="event.stopPropagation(); openQuiz('${sub}')">Test Çöz</button>
+                <button class="btn btn-primary" style="width:100%; padding:12px; font-size:0.9rem; margin-top:5px;" onclick="openQuiz('${sub}')">
+                    <i class="fas fa-play-circle"></i>&nbsp; Hemen Test Çöz
+                </button>
             </div>
         `;
     }).join('');

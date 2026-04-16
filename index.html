@@ -41,6 +41,10 @@
                         <i class="fas fa-store"></i>
                         <span>Market</span>
                     </li>
+                    <li onclick="showSection('profile')" id="nav-profile">
+                        <i class="fas fa-user-circle"></i>
+                        <span>Profil</span>
+                    </li>
                 </ul>
             </nav>
 
@@ -70,7 +74,10 @@
         <main>
             <!-- Mobile Top Bar -->
             <div class="mobile-top-bar">
-                <span class="logo-text">Ders Arkadaşım</span>
+                <div style="display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="showSection('profile')">
+                    <div class="avatar" style="width:35px; height:35px; font-size:1.2rem; display:flex; align-items:center; justify-content:center;">👤</div>
+                    <span class="logo-text">Ders Arkadaşım</span>
+                </div>
                 <div style="display:flex; align-items:center; gap:15px;">
                     <div class="coin-display"><i class="fas fa-coins" style="color:#ffd700"></i> <span id="coin-count">0</span></div>
                     <div class="theme-switcher">
