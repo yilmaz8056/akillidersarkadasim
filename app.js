@@ -115,29 +115,52 @@ function showSection(sectionId) {
 const SUBJECTS = ['Matematik', 'Fen Bilimleri', 'Türkçe', 'Sosyal Bilgiler', 'İngilizce', 'Din Kültürü'];
 const SUBJECT_ICONS = {'Matematik':'🔢', 'Fen Bilimleri':'🧪', 'Türkçe':'📚', 'Sosyal Bilgiler':'🌍', 'İngilizce':'🇬🇧', 'Din Kültürü':'🌙'};
 
+function setupLessonEvents() {
+    const grid = document.getElementById('subject-grid');
+    if (!grid || grid._eventsSetup) return;
+    grid._eventsSetup = true;
+
+    grid.addEventListener('click', function(e) {
+        // Quiz button clicked
+        const quizBtn = e.target.closest('[data-quiz-subject]');
+        if (quizBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            openQuiz(quizBtn.getAttribute('data-quiz-subject'));
+            return;
+        }
+        // Card body clicked - go to timer
+        const card = e.target.closest('[data-timer-subject]');
+        if (card) {
+            startSubject(card.getAttribute('data-timer-subject'));
+        }
+    });
+}
+
 function renderSubjectCards() {
     const grid = document.getElementById('subject-grid');
     if (!grid) return;
     grid.innerHTML = SUBJECTS.map(sub => {
         const xp = state.subjectXP[sub] || 0;
         const lv = Math.floor(xp / 50) + 1;
-        const progress = (xp % 50) * 2;
+        const progress = Math.min((xp % 50) * 2, 100);
         return `
             <div class="subject-card">
-                <div onclick="startSubject('${sub}')" style="cursor:pointer;">
+                <div data-timer-subject="${sub}" style="cursor:pointer; width:100%;">
                     <span class="subject-icon">${SUBJECT_ICONS[sub]}</span>
                     <h3>${sub}</h3>
-                    <p style="opacity:0.7; font-size:0.85rem;">Seviye ${lv}</p>
+                    <p style="opacity:0.7; font-size:0.85rem; margin-top:4px;">Seviye ${lv}</p>
                     <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; margin: 12px 0;">
-                        <div style="width:${progress}%; height:100%; background:var(--accent-blue); border-radius:3px; transition: 0.3s;"></div>
+                        <div style="width:${progress}%; height:100%; background:var(--accent-blue); border-radius:3px;"></div>
                     </div>
                 </div>
-                <button class="btn btn-primary" style="width:100%; padding:12px; font-size:0.9rem; margin-top:5px;" onclick="openQuiz('${sub}')">
-                    <i class="fas fa-play-circle"></i>&nbsp; Hemen Test Çöz
+                <button class="btn btn-primary" data-quiz-subject="${sub}" style="width:100%; padding:12px; font-size:0.9rem; margin-top:8px;">
+                    ▶ Test Çöz
                 </button>
             </div>
         `;
     }).join('');
+    setupLessonEvents();
 }
 
 // --- Daily Quests ---
@@ -304,7 +327,7 @@ function openQuiz(subject) {
     renderQuizQuestion(subject);
 
     const modal = document.getElementById('quiz-modal');
-    modal.style.display = 'flex';
+    modal.classList.add('show');
 }
 
 function renderQuizQuestion(subject) {
@@ -358,7 +381,7 @@ function checkQuizAnswer(selected, correct, subject) {
 }
 
 function closeQuiz() { 
-    document.getElementById('quiz-modal').style.display = 'none';
+    document.getElementById('quiz-modal').classList.remove('show');
     showToast('Test tamamlandı! Harikasın! 🌟');
 }
 
