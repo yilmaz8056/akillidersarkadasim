@@ -93,6 +93,8 @@ function showSection(sectionId) {
     document.querySelectorAll('nav ul li').forEach(li => li.classList.remove('active'));
     const navItem = document.getElementById(`nav-${sectionId}`);
     if (navItem) navItem.classList.add('active');
+
+    if (sectionId === 'lessons') renderSubjectCards();
 }
 
 // --- Subject Levels & Rendering ---
@@ -242,43 +244,105 @@ function deleteExam(index) {
 const QUIZ_BANK = {
     'Matematik': [
         { q: '6 + 8 x 2 işleminin sonucu nedir?', a: ['22', '28', '20', '16'], c: 0 },
-        { q: 'Hangi sayı asaldır?', a: ['9', '15', '21', '13'], c: 3 }
+        { q: 'Hangi sayı asaldır?', a: ['9', '15', '21', '13'], c: 3 },
+        { q: 'Dikdörtgenin alanı nasıl bulunur?', a: ['2 x (a+b)', 'a x b', 'a + b', 'a / b'], c: 1 }
     ],
     'Fen Bilimleri': [
         { q: 'Güneş sistemindeki en büyük gezegen hangisidir?', a: ['Mars', 'Jüpiter', 'Satürn', 'Venüs'], c: 1 },
-        { q: 'Vücudumuzun temel yapı taşı nedir?', a: ['Doku', 'Organ', 'Hücre', 'Sistem'], c: 2 }
+        { q: 'Vücudumuzun temel yapı taşı nedir?', a: ['Doku', 'Organ', 'Hücre', 'Sistem'], c: 2 },
+        { q: 'Hangi kuvvet her zaman zıt yöndedir?', a: ['Yerçekimi', 'Kaldırma', 'Sürtünme', 'Manyetik'], c: 2 }
+    ],
+    'Türkçe': [
+        { q: 'Hangisi bir isim tamlamasıdır?', a: ['Mavi ev', 'Kapı kolu', 'Güzel çocuk', 'Hızlı araba'], c: 1 },
+        { q: 'Hangisi zıt anlamlı kelime çiftidir?', a: ['Siyah-Kara', 'Ak-Beyaz', 'İyi-Kötü', 'Hızlı-Süratli'], c: 2 },
+        { q: 'Cümlenin sonuna hangi işaret konur?', a: ['Virgül', 'Nokta', 'Ünlem', 'Soru İşareti'], c: 1 }
+    ],
+    'Sosyal Bilgiler': [
+        { q: 'Hangisi bir temel haktır?', a: ['Eğitim', 'Araba sürmek', 'Sinemaya gitmek', 'Oyun oynamak'], c: 0 },
+        { q: 'İlk Türk devletlerinde hükümdara ne denir?', a: ['Padişah', 'Sultan', 'Kağan', 'Kral'], c: 2 },
+        { q: 'Hangisi beşeri bir unsurdur?', a: ['Dağ', 'Göl', 'Köprü', 'Irmak'], c: 2 }
+    ],
+    'İngilizce': [
+        { q: 'What is the opposite of "Hot"?', a: ['Cold', 'Warm', 'Big', 'Fast'], c: 0 },
+        { q: 'Which color is a mix of Blue and Red?', a: ['Green', 'Purple', 'Orange', 'Yellow'], c: 1 },
+        { q: 'Monday is the ____ day of the week.', a: ['First', 'Second', 'Third', 'Fourth'], c: 0 }
+    ],
+    'Din Kültürü': [
+        { q: 'İslamın şartı kaçtır?', a: ['3', '4', '5', '6'], c: 2 },
+        { q: 'İmanın şartı kaçtır?', a: ['5', '6', '7', '8'], c: 1 },
+        { q: 'Hangisi Peygamber Efendimizin ismidir?', a: ['Hz. Ali', 'Hz. Muhammed', 'Hz. Ömer', 'Hz. Osman'], c: 1 }
     ]
 };
+
+let currentQuizQuestions = [];
+let currentQuizIndex = 0;
 
 function openQuiz(subject) {
     const questions = QUIZ_BANK[subject] || [];
     if (questions.length === 0) { alert('Bu ders için henüz test eklenmedi!'); return; }
     
-    const randomQ = questions[Math.floor(Math.random() * questions.length)];
+    currentQuizQuestions = [...questions].sort(() => 0.5 - Math.random()).slice(0, 3);
+    currentQuizIndex = 0;
+    renderQuizQuestion(subject);
+
     const modal = document.getElementById('quiz-modal');
-    const body = document.getElementById('quiz-body');
-    
-    body.innerHTML = `
-        <h3 style="margin-bottom:1.5rem;">${subject} Testi</h3>
-        <p style="margin-bottom:1rem;">${randomQ.q}</p>
-        <div style="display:grid; gap:10px;">
-            ${randomQ.a.map((ans, i) => `<button class="btn btn-outline" style="text-align:left;" onclick="checkQuizAnswer(${i}, ${randomQ.c}, '${subject}')">${ans}</button>`).join('')}
-        </div>
-    `;
     modal.style.display = 'flex';
 }
 
-function checkQuizAnswer(selected, correct, subject) {
-    if (selected === correct) {
-        alert('DOĞRU! 🎉 +10 XP ve +5 DP kazandın.');
-        addXP(10, subject);
-    } else {
-        alert('Yanlış cevap! Bir dahaki sefere... 😅');
-    }
-    closeQuiz();
+function renderQuizQuestion(subject) {
+    const q = currentQuizQuestions[currentQuizIndex];
+    const body = document.getElementById('quiz-body');
+    
+    body.innerHTML = `
+        <div style="text-align:center; margin-bottom:20px;">
+            <span class="stat-label">${subject} - Soru ${currentQuizIndex + 1}/3</span>
+        </div>
+        <h3 style="margin-bottom:1.5rem; line-height:1.4;">${q.q}</h3>
+        <div style="display:grid; gap:12px;">
+            ${q.a.map((ans, i) => `
+                <button class="btn btn-outline quiz-ans-btn" style="text-align:left; justify-content: flex-start;" onclick="checkQuizAnswer(${i}, ${q.c}, '${subject}')">
+                    <span style="background:var(--accent-blue); width:24px; height:24px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-right:10px; font-size:0.7rem;">${String.fromCharCode(65+i)}</span>
+                    ${ans}
+                </button>
+            `).join('')}
+        </div>
+    `;
 }
 
-function closeQuiz() { document.getElementById('quiz-modal').style.display = 'none'; }
+function checkQuizAnswer(selected, correct, subject) {
+    const buttons = document.querySelectorAll('.quiz-ans-btn');
+    buttons.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === correct) btn.style.borderColor = '#4caf50';
+        if (i === selected && i !== correct) btn.style.borderColor = '#f44336';
+    });
+
+    if (selected === correct) {
+        addXP(10, subject);
+    }
+
+    const body = document.getElementById('quiz-body');
+    const isLast = currentQuizIndex === currentQuizQuestions.length - 1;
+    
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'btn btn-primary';
+    nextBtn.style.marginTop = '20px';
+    nextBtn.style.width = '100%';
+    nextBtn.innerText = isLast ? 'Testi Bitir' : 'Sıradaki Soru';
+    nextBtn.onclick = () => {
+        if (isLast) closeQuiz();
+        else {
+            currentQuizIndex++;
+            renderQuizQuestion(subject);
+        }
+    };
+    body.appendChild(nextBtn);
+}
+
+function closeQuiz() { 
+    document.getElementById('quiz-modal').style.display = 'none'; 
+    alert('Test tamamlandı! Harikasın! 🌟');
+}
 
 // --- Profile & Backup ---
 function updateUsername() {
