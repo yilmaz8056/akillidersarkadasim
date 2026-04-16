@@ -489,3 +489,202 @@ main {
         margin: 1rem 0;
     }
 }
+
+/* --- PHASE 2 STYLES --- */
+
+/* Themes */
+body.theme-purple {
+    --bg-dark: #1a0b2e;
+    --bg-gradient: linear-gradient(135deg, #1a0b2e 0%, #4a148c 50%, #311b92 100%);
+    --accent-blue: #e040fb;
+    --accent-purple: #7c4dff;
+}
+
+body.theme-gold {
+    --bg-dark: #1a1a1a;
+    --bg-gradient: linear-gradient(135deg, #1a1a1a 0%, #4a2c00 50%, #000000 100%);
+    --accent-blue: #ffd700;
+    --accent-purple: #ff8c00;
+}
+
+.theme-switcher {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+    padding: 0 5px;
+}
+
+.theme-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.2s;
+}
+
+.theme-dot.active { border-color: white; transform: scale(1.2); }
+.theme-default { background: #00d2ff; }
+.theme-purple { background: #e040fb; }
+.theme-gold { background: #ffd700; }
+
+/* Streak & Badges */
+#streak-badge {
+    background: rgba(255, 69, 0, 0.2);
+    color: #ff4500;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid rgba(255, 69, 0, 0.3);
+}
+
+.streak-hidden { display: none !important; }
+
+.badges-row {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+.badge-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: var(--accent-blue);
+    position: relative;
+    cursor: help;
+}
+
+.badge-icon.locked { opacity: 0.3; filter: grayscale(1); }
+
+/* SVG Chart */
+.chart-container {
+    margin-top: 2rem;
+}
+
+.svg-chart {
+    height: 150px;
+    width: 100%;
+    margin-top: 1rem;
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    padding-bottom: 20px;
+}
+
+.chart-bar {
+    flex: 1;
+    background: linear-gradient(to top, var(--accent-blue), var(--accent-purple));
+    border-radius: 4px 4px 0 0;
+    min-height: 5px;
+    position: relative;
+    transition: height 1s ease-out;
+}
+
+.chart-bar::after {
+    content: attr(data-day);
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.6rem;
+    color: var(--text-secondary);
+}
+
+/* Flashcards */
+.flashcards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.flashcard-container {
+    perspective: 1000px;
+    height: 150px;
+    cursor: pointer;
+}
+
+.flashcard-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+}
+
+.flashcard-container.flipped .flashcard-inner {
+    transform: rotateY(180deg);
+}
+
+.flashcard-front, .flashcard-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    border-radius: 16px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    font-weight: 600;
+}
+
+.flashcard-back {
+    transform: rotateY(180deg);
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--accent-blue);
+}
+
+.card-input-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 2rem;
+}
+
+/* Sound Controls */
+.sound-controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.sound-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.sound-btn.active {
+    color: var(--accent-blue);
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
+}
+
+/* Mobile responsive additions */
+@media (max-width: 900px) {
+    .card-input-row { flex-direction: column; }
+    .flashcards-grid { grid-template-columns: 1fr; }
+    .theme-switcher { justify-content: center; margin-top: 10px; }
+}

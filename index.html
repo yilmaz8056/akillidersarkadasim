@@ -33,14 +33,27 @@
                         <i class="fas fa-tasks"></i>
                         <span>Görevler</span>
                     </li>
+                    <li onclick="showSection('flashcards')" id="nav-flashcards">
+                        <i class="fas fa-clone"></i>
+                        <span>Kartlarım</span>
+                    </li>
                 </ul>
             </nav>
+
+            <div class="theme-switcher">
+                <div class="theme-dot theme-default active" onclick="setTheme('default')" title="Gece"></div>
+                <div class="theme-dot theme-purple" onclick="setTheme('purple')" title="Nebula"></div>
+                <div class="theme-dot theme-gold" onclick="setTheme('gold')" title="Altın"></div>
+            </div>
 
             <div class="profile-card">
                 <div class="avatar"></div>
                 <div class="user-info">
                     <h3 id="username-display">Genç Kahraman</h3>
-                    <p id="user-level">Seviye 1</p>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <p id="user-level">Seviye 1</p>
+                        <span id="streak-badge" class="streak-hidden"><i class="fas fa-fire"></i> <span id="streak-count">0</span></span>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -69,9 +82,20 @@
                     </div>
                 </div>
 
-                <div class="header-row">
+                <div class="chart-container stat-card">
+                    <div class="stat-label">Haftalık İlerleme</div>
+                    <div id="weekly-chart" class="svg-chart">
+                        <!-- Chart generated via JS -->
+                    </div>
+                </div>
+
+                <div class="header-row" style="margin-top:2rem;">
                     <h3>Günün Motivasyonu 💡</h3>
                     <p id="quote">"Başarı, her gün tekrarlanan küçük çabaların toplamıdır."</p>
+                </div>
+
+                <div class="badges-row" id="badges-display">
+                    <!-- Badges injected here -->
                 </div>
             </section>
 
@@ -126,6 +150,12 @@
                     
                     <div class="timer-display" id="time-display">25:00</div>
 
+                    <div class="sound-controls">
+                        <button class="sound-btn" onclick="toggleSound('rain')" id="sound-rain" title="Yağmur Sesi"><i class="fas fa-cloud-rain"></i></button>
+                        <button class="sound-btn" onclick="toggleSound('forest')" id="sound-forest" title="Orman Sesi"><i class="fas fa-tree"></i></button>
+                        <button class="sound-btn" onclick="toggleSound('lofi')" id="sound-lofi" title="Lo-Fi Müzik"><i class="fas fa-music"></i></button>
+                    </div>
+
                     <div class="timer-controls">
                         <button class="btn btn-outline" onclick="resetTimer()">Sıfırla</button>
                         <button class="btn btn-primary" id="timer-btn" onclick="toggleTimer()">Başlat</button>
@@ -148,7 +178,25 @@
                 <div id="task-list" class="task-list">
                     <!-- Tasks will be injected here -->
                 </div>
-            </section>main
+            </section>
+
+            <!-- Flashcards Section -->
+            <section id="flashcards" class="section">
+                <div class="header-row">
+                    <h2>Bilgi Kartlarım</h2>
+                    <p>Kendini test et, bilgini tazele!</p>
+                </div>
+
+                <div class="card-input-row">
+                    <input type="text" id="card-front" class="input-glass" placeholder="Kartın Ön Yüzü (Soru/Kelime)">
+                    <input type="text" id="card-back" class="input-glass" placeholder="Kartın Arka Yüzü (Cevap/Anlam)">
+                    <button class="btn btn-primary" onclick="addFlashcard()">Ekle</button>
+                </div>
+
+                <div id="flashcards-grid" class="flashcards-grid">
+                    <!-- Flashcards injected here -->
+                </div>
+            </section>
         </main>
     </div>
 
