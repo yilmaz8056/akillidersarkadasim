@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akıllı Ders Arkadaşım | 6. Sınıf Başarı Paneli</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside>
+            <div class="logo-section">
+                <h1>Ders Arkadaşım</h1>
+            </div>
+
+            <nav>
+                <ul>
+                    <li class="active" onclick="showSection('dashboard')" id="nav-dashboard">
+                        <i class="fas fa-th-large"></i>
+                        <span>Ana Panel</span>
+                    </li>
+                    <li onclick="showSection('lessons')" id="nav-lessons">
+                        <i class="fas fa-book-open"></i>
+                        <span>Derslerim</span>
+                    </li>
+                    <li onclick="showSection('timer')" id="nav-timer">
+                        <i class="fas fa-clock"></i>
+                        <span>Odaklan</span>
+                    </li>
+                    <li onclick="showSection('tasks')" id="nav-tasks">
+                        <i class="fas fa-tasks"></i>
+                        <span>Görevler</span>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="profile-card">
+                <div class="avatar"></div>
+                <div class="user-info">
+                    <h3 id="username-display">Genç Kahraman</h3>
+                    <p id="user-level">Seviye 1</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main>
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="section active">
+                <div class="header-row">
+                    <h2 id="greeting">Selam Kahraman! 🚀</h2>
+                    <p>Bugün harika şeyler öğrenmeye hazır mısın?</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Toplam XP</div>
+                        <div class="stat-value" id="stats-xp">0</div>
+                    </div>
+                    <div class="stat-card purple">
+                        <div class="stat-label">Tamamlanan Görev</div>
+                        <div class="stat-value" id="stats-tasks">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Çalışma Süresi</div>
+                        <div class="stat-value" id="stats-time">0 dk</div>
+                    </div>
+                </div>
+
+                <div class="header-row">
+                    <h3>Günün Motivasyonu 💡</h3>
+                    <p id="quote">"Başarı, her gün tekrarlanan küçük çabaların toplamıdır."</p>
+                </div>
+            </section>
+
+            <!-- Lessons Section -->
+            <section id="lessons" class="section">
+                <div class="header-row">
+                    <h2>Derslerin</h2>
+                    <p>Hangi derse odaklanmak istersin?</p>
+                </div>
+
+                <div class="subject-grid">
+                    <div class="subject-card" onclick="startSubject('Matematik')">
+                        <span class="subject-icon">🔢</span>
+                        <h3>Matematik</h3>
+                        <p>Sayıların Dünyası</p>
+                    </div>
+                    <div class="subject-card" onclick="startSubject('Fen Bilimleri')">
+                        <span class="subject-icon">🧪</span>
+                        <h3>Fen Bilimleri</h3>
+                        <p>Doğayı Keşfet</p>
+                    </div>
+                    <div class="subject-card" onclick="startSubject('Türkçe')">
+                        <span class="subject-icon">📚</span>
+                        <h3>Türkçe</h3>
+                        <p>Dilimizin Gücü</p>
+                    </div>
+                    <div class="subject-card" onclick="startSubject('Sosyal Bilgiler')">
+                        <span class="subject-icon">🌍</span>
+                        <h3>Sosyal Bilgiler</h3>
+                        <p>Dünya ve Toplum</p>
+                    </div>
+                    <div class="subject-card" onclick="startSubject('İngilizce')">
+                        <span class="subject-icon">🇬🇧</span>
+                        <h3>İngilizce</h3>
+                        <p>Yeni Diller, Yeni Kapılar</p>
+                    </div>
+                    <div class="subject-card" onclick="startSubject('Din Kültürü')">
+                        <span class="subject-icon">🌙</span>
+                        <h3>Din Kültürü</h3>
+                        <p>Değerlerimiz</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Timer Section (Pomodoro) -->
+            <section id="timer" class="section">
+                <div class="pomodoro-container">
+                    <div class="header-row">
+                        <h2 id="timer-label">Çalışma Zamanı</h2>
+                        <p>Derin bir nefes al ve başla.</p>
+                    </div>
+                    
+                    <div class="timer-display" id="time-display">25:00</div>
+
+                    <div class="timer-controls">
+                        <button class="btn btn-outline" onclick="resetTimer()">Sıfırla</button>
+                        <button class="btn btn-primary" id="timer-btn" onclick="toggleTimer()">Başlat</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tasks Section -->
+            <section id="tasks" class="section">
+                <div class="header-row">
+                    <h2>Ödevlerin ve Görevlerin</h2>
+                    <p>Yapılacakları listele, XP'leri topla!</p>
+                </div>
+
+                <div class="task-input-row">
+                    <input type="text" id="task-input" class="input-glass" placeholder="Yeni bir görev ekle...">
+                    <button class="btn btn-primary" onclick="addTask()">Ekle</button>
+                </div>
+
+                <div id="task-list" class="task-list">
+                    <!-- Tasks will be injected here -->
+                </div>
+            </section>main
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
