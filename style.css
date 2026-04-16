@@ -277,3 +277,148 @@ body.theme-gold {
     main { height: 100vh; }
     .timer-display { font-size: 3rem; }
 }
+
+/* --- PHASE 3 MEGA UPDATES STYLES --- */
+
+.dashboard-grid-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.quest-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.quest-item {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 12px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    border: 1px solid var(--glass-border);
+    transition: 0.3s;
+}
+
+.quest-item.completed {
+    border-color: #4caf50;
+    background: rgba(76, 175, 80, 0.1);
+    opacity: 0.8;
+}
+
+.market-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 1.5rem;
+}
+
+.market-item {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    padding: 1.5rem 1rem;
+    border-radius: 20px;
+    text-align: center;
+    transition: all 0.3s;
+    cursor: pointer;
+    position: relative;
+}
+
+.market-item:hover {
+    background: rgba(255,255,255,0.08);
+    transform: translateY(-5px);
+    border-color: var(--accent-blue);
+}
+
+.market-item.owned {
+    border-color: #4caf50;
+}
+
+.item-price {
+    color: #ffd700;
+    font-weight: 800;
+    font-size: 0.9rem;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.avatar-large {
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(var(--accent-blue), var(--accent-purple));
+    border-radius: 50%;
+    margin: 0 auto 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    border: 5px solid var(--glass-border);
+    box-shadow: 0 0 30px rgba(0, 210, 255, 0.2);
+}
+
+.exam-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: var(--glass-bg);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    font-size: 0.85rem;
+    border-left: 3px solid var(--accent-blue);
+}
+
+.coin-display {
+    background: rgba(255, 215, 0, 0.1);
+    color: #ffd700;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+/* Modal Styling */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 5000;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(8px);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: #1a1a2e;
+    padding: 2.5rem;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 28px;
+    border: 1px solid var(--glass-border);
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+}
+
+.close {
+    position: absolute; right: 25px; top: 20px;
+    font-size: 2.5rem; cursor: pointer; color: var(--text-secondary);
+}
+
+@media (max-width: 900px) {
+    .dashboard-grid-layout { grid-template-columns: 1fr; }
+    .market-grid { grid-template-columns: repeat(2, 1fr); }
+    .modal-content { padding: 2rem 1.5rem; width: 95%; }
+}

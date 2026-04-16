@@ -11,7 +11,7 @@
     <div class="app-container">
         <!-- Desktop Sidebar Navigation -->
         <aside>
-            <div class="logo-section">
+            <div class="logo-section" onclick="showSection('dashboard')" style="cursor:pointer">
                 <h1>Ders Arkadaşım</h1>
             </div>
 
@@ -37,10 +37,14 @@
                         <i class="fas fa-clone"></i>
                         <span>Kartlarım</span>
                     </li>
+                    <li onclick="showSection('market')" id="nav-market">
+                        <i class="fas fa-store"></i>
+                        <span>Market</span>
+                    </li>
                 </ul>
             </nav>
 
-            <!-- Desktop Theme Switcher (Inside Sidebar) -->
+            <!-- Desktop Theme Switcher -->
             <div class="theme-switcher-container desktop-only">
                 <p class="stat-label" style="font-size: 0.6rem; margin-bottom: 8px; opacity: 0.6;">TEMA SEÇ</p>
                 <div class="theme-switcher">
@@ -50,8 +54,8 @@
                 </div>
             </div>
 
-            <div class="profile-card">
-                <div class="avatar"></div>
+            <div class="profile-card" onclick="showSection('profile')" style="cursor:pointer">
+                <div class="avatar" id="sidebar-avatar">👤</div>
                 <div class="user-info">
                     <h3 id="username-display">Genç Kahraman</h3>
                     <div style="display:flex; align-items:center; gap:8px;">
@@ -64,13 +68,16 @@
 
         <!-- Main Content Area -->
         <main>
-            <!-- Mobile Top Bar (Only visible on mobile) -->
+            <!-- Mobile Top Bar -->
             <div class="mobile-top-bar">
                 <span class="logo-text">Ders Arkadaşım</span>
-                <div class="theme-switcher">
-                    <div class="theme-dot theme-default active" onclick="setTheme('default')" title="Gece"></div>
-                    <div class="theme-dot theme-purple" onclick="setTheme('purple')" title="Nebula"></div>
-                    <div class="theme-dot theme-gold" onclick="setTheme('gold')" title="Altın"></div>
+                <div style="display:flex; align-items:center; gap:15px;">
+                    <div class="coin-display"><i class="fas fa-coins" style="color:#ffd700"></i> <span id="coin-count">0</span></div>
+                    <div class="theme-switcher">
+                        <div class="theme-dot theme-default active" onclick="setTheme('default')"></div>
+                        <div class="theme-dot theme-purple" onclick="setTheme('purple')"></div>
+                        <div class="theme-dot theme-gold" onclick="setTheme('gold')"></div>
+                    </div>
                 </div>
             </div>
 
@@ -81,31 +88,37 @@
                     <p>Bugün harika şeyler öğrenmeye hazır mısın?</p>
                 </div>
 
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-label">Toplam XP</div>
-                        <div class="stat-value" id="stats-xp">0</div>
+                <div class="dashboard-grid-layout">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Toplam XP</div>
+                            <div class="stat-value" id="stats-xp">0</div>
+                        </div>
+                        <div class="stat-card purple">
+                            <div class="stat-label">Cüzdan (DP)</div>
+                            <div class="stat-value" id="stats-coins">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Çalışma Süresi</div>
+                            <div class="stat-value" id="stats-time">0 dk</div>
+                        </div>
                     </div>
-                    <div class="stat-card purple">
-                        <div class="stat-label">Tamamlanan Görev</div>
-                        <div class="stat-value" id="stats-tasks">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Çalışma Süresi</div>
-                        <div class="stat-value" id="stats-time">0 dk</div>
+
+                    <div class="quest-card stat-card">
+                        <div class="stat-label">Günün Görevleri</div>
+                        <div id="daily-quests-list" class="quest-list">
+                            <!-- Quests injected here -->
+                        </div>
                     </div>
                 </div>
 
                 <div class="chart-container stat-card">
                     <div class="stat-label">Haftalık İlerleme</div>
-                    <div id="weekly-chart" class="svg-chart">
-                        <!-- Chart generated via JS -->
-                    </div>
+                    <div id="weekly-chart" class="svg-chart"></div>
                 </div>
 
-                <div class="header-row" style="margin-top:2rem;">
-                    <h3>Günün Motivasyonu 💡</h3>
-                    <p id="quote">"Başarı, her gün tekrarlanan küçük çabaların toplamıdır."</p>
+                <div class="exam-countdown-container" id="exam-widget">
+                    <!-- Exam countdown will be injected here -->
                 </div>
 
                 <div class="badges-row" id="badges-display">
@@ -119,57 +132,24 @@
                     <h2>Derslerin</h2>
                     <p>Hangi derse odaklanmak istersin?</p>
                 </div>
-
-                <div class="subject-grid">
-                    <div class="subject-card" onclick="startSubject('Matematik')">
-                        <span class="subject-icon">🔢</span>
-                        <h3>Matematik</h3>
-                        <p>Sayıların Dünyası</p>
-                    </div>
-                    <div class="subject-card" onclick="startSubject('Fen Bilimleri')">
-                        <span class="subject-icon">🧪</span>
-                        <h3>Fen Bilimleri</h3>
-                        <p>Doğayı Keşfet</p>
-                    </div>
-                    <div class="subject-card" onclick="startSubject('Türkçe')">
-                        <span class="subject-icon">📚</span>
-                        <h3>Türkçe</h3>
-                        <p>Dilimizin Gücü</p>
-                    </div>
-                    <div class="subject-card" onclick="startSubject('Sosyal Bilgiler')">
-                        <span class="subject-icon">🌍</span>
-                        <h3>Sosyal Bilgiler</h3>
-                        <p>Dünya ve Toplum</p>
-                    </div>
-                    <div class="subject-card" onclick="startSubject('İngilizce')">
-                        <span class="subject-icon">🇬🇧</span>
-                        <h3>İngilizce</h3>
-                        <p>Yeni Diller, Yeni Kapılar</p>
-                    </div>
-                    <div class="subject-card" onclick="startSubject('Din Kültürü')">
-                        <span class="subject-icon">🌙</span>
-                        <h3>Din Kültürü</h3>
-                        <p>Değerlerimiz</p>
-                    </div>
+                <div class="subject-grid" id="subject-grid">
+                    <!-- Subject cards injected via JS for XP support -->
                 </div>
             </section>
 
-            <!-- Timer Section (Pomodoro) -->
+            <!-- Timer Section -->
             <section id="timer" class="section">
                 <div class="pomodoro-container">
                     <div class="header-row">
                         <h2 id="timer-label">Çalışma Zamanı</h2>
                         <p>Derin bir nefes al ve başla.</p>
                     </div>
-                    
                     <div class="timer-display" id="time-display">25:00</div>
-
                     <div class="sound-controls">
-                        <button class="sound-btn" onclick="toggleSound('rain')" id="sound-rain" title="Yağmur Sesi"><i class="fas fa-cloud-rain"></i></button>
-                        <button class="sound-btn" onclick="toggleSound('forest')" id="sound-forest" title="Orman Sesi"><i class="fas fa-tree"></i></button>
-                        <button class="sound-btn" onclick="toggleSound('lofi')" id="sound-lofi" title="Lo-Fi Müzik"><i class="fas fa-music"></i></button>
+                        <button class="sound-btn" onclick="toggleSound('rain')" id="sound-rain"><i class="fas fa-cloud-rain"></i></button>
+                        <button class="sound-btn" onclick="toggleSound('forest')" id="sound-forest"><i class="fas fa-tree"></i></button>
+                        <button class="sound-btn" onclick="toggleSound('lofi')" id="sound-lofi"><i class="fas fa-music"></i></button>
                     </div>
-
                     <div class="timer-controls">
                         <button class="btn btn-outline" onclick="resetTimer()">Sıfırla</button>
                         <button class="btn btn-primary" id="timer-btn" onclick="toggleTimer()">Başlat</button>
@@ -177,41 +157,87 @@
                 </div>
             </section>
 
-            <!-- Tasks Section -->
+            <!-- Market Section -->
+            <section id="market" class="section">
+                <div class="header-row">
+                    <h2>Kahraman Pazarı</h2>
+                    <p>XP'lerinle havalı eşyalar al!</p>
+                </div>
+                <div class="market-grid" id="market-grid">
+                    <!-- Market items injected here -->
+                </div>
+            </section>
+
+            <!-- Profile & Settings Section -->
+            <section id="profile" class="section">
+                <div class="header-row">
+                    <h2>Profilin ve Ayarlar</h2>
+                </div>
+                <div class="profile-full-card stat-card">
+                    <div class="avatar-large" id="profile-avatar">👤</div>
+                    <div class="profile-details">
+                        <input type="text" id="username-input" class="input-glass" placeholder="Adını Değiştir">
+                        <button class="btn btn-primary" onclick="updateUsername()">Kaydet</button>
+                    </div>
+                </div>
+                <div class="settings-grid">
+                    <div class="stat-card">
+                        <h3>Sınav Takvimi</h3>
+                        <div class="exam-input-row">
+                            <input type="text" id="exam-name" class="input-glass" placeholder="Ders Adı">
+                            <input type="date" id="exam-date" class="input-glass">
+                            <button class="btn btn-primary" onclick="addExam()">Ekle</button>
+                        </div>
+                        <div id="exam-list" class="exam-list"></div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Veri Yönetimi</h3>
+                        <p style="font-size:0.8rem; margin-bottom:1rem; opacity:0.7;">İlerlemeni yedekleyebilir veya başka cihazdan yükleyebilirsin.</p>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn btn-outline" onclick="exportData()">Dışa Aktar</button>
+                            <label class="btn btn-primary" style="cursor:pointer">
+                                İçe Aktar <input type="file" id="import-file" hidden onchange="importData(this)">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tasks, Flashcards remain similar but sections logic needs visibility -->
             <section id="tasks" class="section">
                 <div class="header-row">
-                    <h2>Ödevlerin ve Görevlerin</h2>
-                    <p>Yapılacakları listele, XP'leri topla!</p>
+                    <h2>Görevlerin</h2>
                 </div>
-
                 <div class="task-input-row">
-                    <input type="text" id="task-input" class="input-glass" placeholder="Yeni bir görev ekle...">
+                    <input type="text" id="task-input" class="input-glass" placeholder="Yeni görev...">
                     <button class="btn btn-primary" onclick="addTask()">Ekle</button>
                 </div>
-
-                <div id="task-list" class="task-list">
-                    <!-- Tasks will be injected here -->
-                </div>
+                <div id="task-list" class="task-list"></div>
             </section>
 
-            <!-- Flashcards Section -->
             <section id="flashcards" class="section">
                 <div class="header-row">
-                    <h2>Bilgi Kartlarım</h2>
-                    <p>Kendini test et, bilgini tazele!</p>
+                    <h2>Kartlarım</h2>
                 </div>
-
                 <div class="card-input-row">
-                    <input type="text" id="card-front" class="input-glass" placeholder="Kartın Ön Yüzü (Soru/Kelime)">
-                    <input type="text" id="card-back" class="input-glass" placeholder="Kartın Arka Yüzü (Cevap/Anlam)">
+                    <input type="text" id="card-front" class="input-glass" placeholder="Ön yüz">
+                    <input type="text" id="card-back" class="input-glass" placeholder="Arka yüz">
                     <button class="btn btn-primary" onclick="addFlashcard()">Ekle</button>
                 </div>
-
-                <div id="flashcards-grid" class="flashcards-grid">
-                    <!-- Flashcards injected here -->
-                </div>
+                <div id="flashcards-grid" class="flashcards-grid"></div>
             </section>
+
         </main>
+    </div>
+
+    <!-- Quiz Modal -->
+    <div id="quiz-modal" class="modal">
+        <div class="modal-content stat-card">
+            <span class="close" onclick="closeQuiz()">&times;</span>
+            <div id="quiz-body">
+                <!-- Quiz content here -->
+            </div>
+        </div>
     </div>
 
     <script src="app.js"></script>
