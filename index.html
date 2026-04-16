@@ -9,7 +9,7 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Sidebar Navigation -->
+        <!-- Desktop Sidebar Navigation -->
         <aside>
             <div class="logo-section">
                 <h1>Ders Arkadaşım</h1>
@@ -40,10 +40,14 @@
                 </ul>
             </nav>
 
-            <div class="theme-switcher">
-                <div class="theme-dot theme-default active" onclick="setTheme('default')" title="Gece"></div>
-                <div class="theme-dot theme-purple" onclick="setTheme('purple')" title="Nebula"></div>
-                <div class="theme-dot theme-gold" onclick="setTheme('gold')" title="Altın"></div>
+            <!-- Desktop Theme Switcher (Inside Sidebar) -->
+            <div class="theme-switcher-container desktop-only">
+                <p class="stat-label" style="font-size: 0.6rem; margin-bottom: 8px; opacity: 0.6;">TEMA SEÇ</p>
+                <div class="theme-switcher">
+                    <div class="theme-dot theme-default active" onclick="setTheme('default')" title="Gece"></div>
+                    <div class="theme-dot theme-purple" onclick="setTheme('purple')" title="Nebula"></div>
+                    <div class="theme-dot theme-gold" onclick="setTheme('gold')" title="Altın"></div>
+                </div>
             </div>
 
             <div class="profile-card">
@@ -60,6 +64,16 @@
 
         <!-- Main Content Area -->
         <main>
+            <!-- Mobile Top Bar (Only visible on mobile) -->
+            <div class="mobile-top-bar">
+                <span class="logo-text">Ders Arkadaşım</span>
+                <div class="theme-switcher">
+                    <div class="theme-dot theme-default active" onclick="setTheme('default')" title="Gece"></div>
+                    <div class="theme-dot theme-purple" onclick="setTheme('purple')" title="Nebula"></div>
+                    <div class="theme-dot theme-gold" onclick="setTheme('gold')" title="Altın"></div>
+                </div>
+            </div>
+
             <!-- Dashboard Section -->
             <section id="dashboard" class="section active">
                 <div class="header-row">
