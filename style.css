@@ -452,23 +452,53 @@ body.theme-gold {
     .profile-full-card { flex-direction: column; text-align: center; gap: 1rem; }
     .subject-card { display: flex; flex-direction: column; align-items: center; padding: 1.5rem; }
     .subject-card .btn { width: 100%; margin-top: 15px; }
-    .timer-display { font-size: 4rem; }
-    .market-grid { grid-template-columns: repeat(2, 1fr); }
-    .coin-display { background: rgba(255, 215, 0, 0.1); padding: 4px 10px; border-radius: 15px; color: #ffd700; font-size: 0.8rem; font-weight: 800; }
+/* Mastery Badges */
+.master-badge {
+    position: absolute; top: 10px; right: 10px;
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    color: #000; font-size: 0.65rem; font-weight: 800;
+    padding: 4px 8px; border-radius: 8px; 
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+    pointer-events: none; z-index: 10;
+}
+.master-badge.pro { background: linear-gradient(135deg, #00d2ff, #9d50bb); color: white; box-shadow: 0 4px 15px rgba(0, 210, 255, 0.4); }
+
+/* Transitions & Fixes */
+.section { 
+    padding: 1.5rem; padding-bottom: 120px; 
+    display: none; animation: slideUp 0.4s ease;
+}
+.section.active { display: block; }
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* Zen Mode Focus */
-body.zen-mode .section:not(.active),
-body.zen-mode aside, 
-body.zen-mode .mobile-top-bar {
-    filter: blur(10px) grayscale(0.5);
-    pointer-events: none;
-    opacity: 0.3;
+/* Zen Mode Backdrop Fix */
+body.zen-mode::after {
+    content: ''; position: fixed; inset: 0;
+    background: rgba(15, 12, 41, 0.4); backdrop-filter: blur(15px);
+    z-index: 2800; animation: fadeIn 0.5s ease;
 }
-body.zen-mode .section.active {
-    transform: scale(1.05);
-    z-index: 3000;
-}
+body.zen-mode .section.active { z-index: 3000; position: relative; }
+[diff_block_start]
+@@ -458,18 +478,5 @@
+ }
+-
+-/* Zen Mode Focus */
+-body.zen-mode .section:not(.active),
+-body.zen-mode aside, 
+-body.zen-mode .mobile-top-bar {
+-    filter: blur(10px) grayscale(0.5);
+-    pointer-events: none;
+-    opacity: 0.3;
+-}
+-body.zen-mode .section.active {
+-    transform: scale(1.05);
+-    z-index: 3000;
+-}
+ [diff_block_end]
 
 /* Animations */
 @keyframes pulse-gold {

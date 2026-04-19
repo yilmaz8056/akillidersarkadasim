@@ -158,7 +158,13 @@ function checkBadges() {
 function showSection(sectionId) {
     document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
     const target = document.getElementById(sectionId);
-    if (target) target.classList.add('active');
+    if (target) {
+        target.classList.add('active');
+        // Prevent layout jumps by scrolling main content area to top
+        const main = document.querySelector('main');
+        if (main) main.scrollTo({ top: 0, behavior: 'auto' });
+        window.scrollTo(0, 0); 
+    }
 
     document.querySelectorAll('aside nav ul li, nav ul li').forEach(li => li.classList.remove('active'));
     const navItem = document.getElementById(`nav-${sectionId}`);
@@ -198,8 +204,11 @@ function renderSubjectCards() {
         const lv = Math.floor(xp / 50) + 1;
         const progress = Math.min((xp % 50) * 2, 100);
         const nearMastery = progress >= 80 ? 'mastery-pulse' : '';
+        const isMaster = lv >= 10 ? '<div class="master-badge">👑 USTA</div>' : lv >= 5 ? '<div class="master-badge pro">💎 PRO</div>' : '';
+        
         return `
             <div class="subject-card ${nearMastery}">
+                ${isMaster}
                 <div data-timer-subject="${sub}" style="cursor:pointer; width:100%;">
                     <span class="subject-icon">${SUBJECT_ICONS[sub]}</span>
                     <h3>${sub}</h3>
@@ -488,17 +497,18 @@ let currentQuizQuestions = [];
 let currentQuizIndex = 0;
 
 function openQuiz(subject) {
-    AudioEngine.init(); // Init audio engine on user interaction
+    // Reset performance counters for every new test
+    correctAnswersCount = 0;
+    currentQuizIndex = 0;
+    
+    AudioEngine.init(); 
     const subXP = state.subjectXP[subject] || 0;
     const currentLevel = Math.floor(subXP / 50) + 1;
-    
-    // Fallback to Level 1 if higher levels are missing
-    const levelData = QUIZ_BANK[subject][currentLevel] || QUIZ_BANK[subject][1];
+    const levelData = (QUIZ_BANK[subject] && QUIZ_BANK[subject][currentLevel]) || (QUIZ_BANK[subject] && QUIZ_BANK[subject][1]);
     
     if (!levelData) { showToast('İçerik hazırlanıyor!'); return; }
     
     currentQuizQuestions = [...levelData].sort(() => 0.5 - Math.random()).slice(0, 10);
-    currentQuizIndex = 0;
     renderQuizQuestion(subject, currentLevel);
     document.getElementById('quiz-modal').classList.add('show');
 }
@@ -661,7 +671,7 @@ function renderChart() {
     const maxVal = Math.max(...state.weeklyData, 100);
     container.innerHTML = state.weeklyData.map((val, i) => {
         const height = (val / maxVal) * 100;
-        return `<div class="chart-bar" style="height: ${height}%" data-day="${days[i]}"></div>`;
+        return `<div class="chart-bar" style="height: ${height}%" data-day="${days[i]}" onclick="showToast('${days[i]}: ${val} XP topladın! ⚡')"></div>`;
     }).join('');
 }
 
