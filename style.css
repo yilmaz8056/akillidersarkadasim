@@ -55,10 +55,25 @@ nav ul li.active {
     color: var(--text-primary); box-shadow: var(--glass-shadow);
 }
 
-/* Main Content */
+/* Study Buddy Styling */
+.study-buddy-container {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    position: relative; animation: buddyFloat 3s infinite ease-in-out; cursor: pointer;
+}
+@keyframes buddyFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.buddy-icon { font-size: 2.2rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); }
+.buddy-bubble {
+    position: absolute; top: -35px; right: -20px; background: white; color: #333;
+    font-size: 0.65rem; font-weight: 800; padding: 4px 10px; border-radius: 10px;
+    white-space: nowrap; box-shadow: 0 4px 15px rgba(0,0,0,0.2); opacity: 0;
+    transition: 0.3s; pointer-events: none;
+}
+.study-buddy-container:hover .buddy-bubble { opacity: 1; top: -45px; }
+
+/* Desktop & Mobile Padding Fixes */
 main {
     padding: 3rem; overflow-y: auto; overflow-x: hidden;
-    height: 100vh; position: relative;
+    height: 100vh; position: relative; scroll-behavior: smooth;
 }
 
 .section { display: none; }

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ders-arkadasim-v5-final-stable';
+const CACHE_NAME = 'ders-arkadasim-v6-study-buddy-final';
 const urlsToCache = [
   './index.html',
   './style.css',

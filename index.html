@@ -97,9 +97,15 @@
 
             <!-- Dashboard Section -->
             <section id="dashboard" class="section active">
-                <div class="header-row">
-                    <h2 id="greeting">Selam Kahraman! 🚀</h2>
-                    <p>Bugün harika şeyler öğrenmeye hazır mısın?</p>
+                <div class="header-row" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h2>Hoş Geldin, <span id="user-display-name">Kahraman</span>!</h2>
+                        <p>Bugün harika bir öğrenme günü. 🚀</p>
+                    </div>
+                    <div id="study-buddy" class="study-buddy-container">
+                        <div class="buddy-bubble">Hadi başlayalım!</div>
+                        <div class="buddy-icon">😴</div>
+                    </div>
                 </div>
 
                 <!-- Exam countdown MOVED TO TOP for visibility -->
@@ -283,6 +289,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=3.7.0"></script>
+    <script src="app.js?v=3.8.0"></script>
 </body>
 </html>

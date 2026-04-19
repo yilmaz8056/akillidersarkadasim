@@ -24,6 +24,19 @@ let state = {
     dailyXP: JSON.parse(localStorage.getItem('study_daily_xp')) || { date: "", amount: 0 }
 };
 
+// Study Buddy Global Voice
+function updateStudyBuddy() {
+    const buddyIcon = document.querySelector('.buddy-icon');
+    const buddyBubble = document.querySelector('.buddy-bubble');
+    if (!buddyIcon || !buddyBubble) return;
+    
+    const xp = state.dailyXP.amount || 0;
+    if (xp >= 150) { buddyIcon.innerText = '🔥'; buddyBubble.innerText = 'Efsanevi Bir Gün! 🏆'; }
+    else if (xp >= 80) { buddyIcon.innerText = '📚'; buddyBubble.innerText = 'Derin Odaklanma Modu!'; }
+    else if (xp >= 30) { buddyIcon.innerText = '⚡'; buddyBubble.innerText = 'Güzel İlerliyorsun!'; }
+    else { buddyIcon.innerText = '😴'; buddyBubble.innerText = 'Hadi Başlayalım!'; }
+}
+
 // --- Initialization ---
 window.onload = () => {
     // Sync Daily XP
@@ -160,10 +173,9 @@ function showSection(sectionId) {
     const target = document.getElementById(sectionId);
     if (target) {
         target.classList.add('active');
-        // Prevent layout jumps by scrolling main content area to top
+        // Smoother, cleaner navigation to top
         const main = document.querySelector('main');
-        if (main) main.scrollTo({ top: 0, behavior: 'auto' });
-        window.scrollTo(0, 0); 
+        if (main) main.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     document.querySelectorAll('aside nav ul li, nav ul li').forEach(li => li.classList.remove('active'));
@@ -171,6 +183,7 @@ function showSection(sectionId) {
     if (navItem) navItem.classList.add('active');
 
     if (sectionId === 'lessons') renderSubjectCards();
+    updateStudyBuddy();
 }
 
 // --- Subject Levels & Rendering ---
@@ -355,9 +368,9 @@ function deleteExam(index) {
     renderExams();
 }
 
-// --- Audio & Sound Engine (High Stability Edition) ---
+// --- Audio Engine (Ultra-Link Stable Edition) ---
 const AudioEngine = {
-    initialized: false,
+    audioObjects: {},
     sources: {
         rain: 'https://actions.google.com/sounds/v1/water/rain_on_roof.ogg',
         forest: 'https://actions.google.com/sounds/v1/nature/forest_ambience.ogg',
@@ -365,49 +378,49 @@ const AudioEngine = {
     },
     init() {
         if (this.initialized) return;
-        ['rain', 'forest', 'lofi'].forEach(t => {
-            const audio = document.getElementById(`audio-${t}`);
-            if (audio) { 
-                audio.src = this.sources[t];
-                // Use ogg for better mobile compatibility in some cases, or handle gracefully
-                audio.load();
-                audio.volume = 0.5;
-            }
+        Object.keys(this.sources).forEach(key => {
+            this.audioObjects[key] = new Audio(this.sources[key]);
+            this.audioObjects[key].loop = true;
+            this.audioObjects[key].volume = 0.5;
         });
         this.initialized = true;
+    },
+    play(type) {
+        this.init();
+        Object.keys(this.audioObjects).forEach(key => {
+            if (key !== type) this.audioObjects[key].pause();
+        });
+        const a = this.audioObjects[type];
+        if (a) {
+            a.currentTime = 0;
+            a.play().catch(e => {
+                console.warn('Audio play blocked, needs interaction');
+                showToast('Müzik için bir yere dokun!');
+            });
+        }
+    },
+    pauseAll() {
+        Object.values(this.audioObjects).forEach(a => a.pause());
     }
 };
 
 function toggleSound(type) {
-    AudioEngine.init(); 
-    const btn = document.getElementById(`sound-${type}`);
-    const audio = document.getElementById(`audio-${type}`);
+    const btn = document.getElementById(`sound-${soundType(type)}`);
+    // soundType logic to match potential ID variants
+    function soundType(t) { return t; }
     
-    if (!audio) return;
-
-    // Reset all other buttons and sounds
+    // Reset buttons
     ['rain', 'forest', 'lofi'].forEach(t => {
-        if (t !== type) {
-            const b = document.getElementById(`sound-${t}`);
-            const a = document.getElementById(`audio-${t}`);
-            if (b) b.classList.remove('active');
-            if (a) a.pause();
-        }
+        const b = document.getElementById(`sound-${t}`);
+        if (b && t !== type) b.classList.remove('active');
     });
 
-    if (btn.classList.toggle('active')) {
-        audio.currentTime = 0;
-        const playPromise = audio.play();
-        if (playPromise !== undefined) {
-            playPromise.catch(e => {
-                console.warn('Audio play retry:', e);
-                // Try one more time after a tiny delay
-                setTimeout(() => audio.play(), 100);
-            });
-        }
+    const activeBtn = document.getElementById(`sound-${type}`);
+    if (activeBtn.classList.toggle('active')) {
+        AudioEngine.play(type);
         showToast(`${type.toUpperCase()} sesi açıldı. 🎵`);
     } else {
-        audio.pause();
+        AudioEngine.pauseAll();
         showToast('Ses kapatıldı.');
     }
 }
