@@ -19,9 +19,9 @@ body { background: var(--bg-gradient); background-attachment: fixed; height: 100
 
 .app-container { display: grid; grid-template-columns: 280px 1fr; height: 100vh; }
 
-/* Themes */
-body.theme-purple { --bg-gradient: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); --accent-blue: #a78bfa; --accent-purple: #c084fc; }
-body.theme-gold { --bg-gradient: linear-gradient(135deg, #18181b 0%, #3f2b00 100%); --accent-blue: #fbbf24; --accent-purple: #f59e0b; }
+/* Premium Themes */
+body.theme-purple { --bg-gradient: linear-gradient(135deg, #1a0b2e 0%, #31154a 50%, #150626 100%); --accent-blue: #a78bfa; --accent-purple: #c084fc; }
+body.theme-gold { --bg-gradient: linear-gradient(135deg, #111111 0%, #3a3014 50%, #181509 100%); --accent-blue: #ffd700; --accent-purple: #b8860b; }
 
 /* Sidebar */
 aside { background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px); border-right: 1px solid var(--glass-border); padding: 2rem; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.3s ease; }
@@ -96,9 +96,15 @@ main { padding: 3rem; overflow-y: auto; overflow-x: hidden; height: 100vh; posit
 .modal-content { background: #1a1a2e; border: 1px solid var(--glass-border); padding: 2rem; width: 92%; max-width: 480px; border-radius: 24px; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.8); max-height: 85vh; overflow-y: auto; }
 .close { position: absolute; right: 20px; top: 15px; font-size: 2rem; cursor: pointer; color: var(--text-secondary); }
 
-/* Spaced Repetition Buttons */
+/* Spaced Repetition Buttons & Flashcard 3D Logic */
+.flashcard-container { perspective: 1000px; width: 100%; height: 250px; cursor: pointer; }
+.flashcard-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s; transform-style: preserve-3d; }
+.flashcard-container.flipped .flashcard-inner { transform: rotateY(180deg); }
+.flashcard-front, .flashcard-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: var(--card-shadow); font-size: 1.5rem; font-weight: 600; flex-direction: column; }
+.flashcard-back { transform: rotateY(180deg); background: linear-gradient(135deg, rgba(0, 210, 255, 0.1), rgba(157, 80, 187, 0.1)); border-color: var(--accent-blue); }
 .srs-controls { display: flex; justify-content: center; gap: 10px; margin-top: 15px; }
-.srs-btn { padding: 8px 15px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; color: white; font-size: 0.8rem; }
+.srs-btn { padding: 8px 15px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; color: white; font-size: 0.8rem; pointer-events: auto; }
+.srs-btn:hover { opacity: 0.8; }
 .srs-zor { background: #f44336; } .srs-orta { background: #ff9800; } .srs-kolay { background: #4caf50; }
 
 /* Mobile Strict View */

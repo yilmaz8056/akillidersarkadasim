@@ -541,7 +541,6 @@ function openQuiz(subject) {
     correctAnswersCount = 0;
     currentQuizIndex = 0;
     
-    AudioEngine.init(); 
     const subXP = state.subjectXP[subject] || 0;
     const currentLevel = Math.floor(subXP / 50) + 1;
     const levelData = (QUIZ_BANK[subject] && QUIZ_BANK[subject][currentLevel]) || (QUIZ_BANK[subject] && QUIZ_BANK[subject][1]);
@@ -806,20 +805,33 @@ function renderFlashcards() {
                 <div class="flashcard-back" style="padding:1rem; display:flex; flex-direction:column; justify-content:center;">
                     <div style="flex:1; display:flex; align-items:center; justify-content:center;">${card.back}</div>
                     <div class="srs-controls" onclick="event.stopPropagation()">
-                        <button class="srs-btn srs-zor" onclick="rateCard(${card.id}, 1)">Zor</button>
-                        <button class="srs-btn srs-orta" onclick="rateCard(${card.id}, 2)">Orta</button>
-                        <button class="srs-btn srs-kolay" onclick="rateCard(${card.id}, 3)">Kolay</button>
+                        <button class="srs-btn srs-zor" onclick="rateCard(event, ${card.id}, 1)">Zor</button>
+                        <button class="srs-btn srs-orta" onclick="rateCard(event, ${card.id}, 2)">Orta</button>
+                        <button class="srs-btn srs-kolay" onclick="rateCard(event, ${card.id}, 3)">Kolay</button>
                     </div>
                 </div>
             </div>
         </div>`).join('');
 }
 
-function rateCard(id, score) {
+function rateCard(event, id, score) {
+    event.stopPropagation();
+    const btnContainer = event.target.parentElement;
+    if (btnContainer.dataset.locked === 'true') {
+        showToast('Bu kartı zaten yanıtladın. Diğerlerine geç!');
+        return;
+    }
+    btnContainer.dataset.locked = 'true';
+
     const xpReward = score * 5;
     addXP(xpReward);
     const msgs = ["Daha çok çalışacağız! 💪", "Güzel, gelişiyorsun! 👍", "Çok Kolaydı! 🔥"];
     showToast(msgs[score-1] + ` +${xpReward} XP`);
+    
+    setTimeout(() => {
+        const cardCont = btnContainer.closest('.flashcard-container');
+        if (cardCont) cardCont.classList.remove('flipped');
+    }, 800);
 }
 
 let timerInterval; let timeLeft = 25 * 60; let isTimerRunning = false;
@@ -833,7 +845,6 @@ function toggleTimer() {
         showSessionRecap(Math.floor((25 * 60 - timeLeft) / 60)); // Partial recap
     }
     else {
-        AudioEngine.init();
         isTimerRunning = true; 
         btn.innerText = 'Durdur';
         document.body.classList.add('zen-mode'); // Enter Zen Mode
