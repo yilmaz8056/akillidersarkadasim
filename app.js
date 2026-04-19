@@ -21,7 +21,8 @@ let state = {
         'Matematik': 0, 'Fen Bilimleri': 0, 'Türkçe': 0, 'Sosyal Bilgiler': 0, 'İngilizce': 0, 'Din Kültürü': 0
     },
     level: parseInt(localStorage.getItem('study_level')) || 1,
-    dailyXP: JSON.parse(localStorage.getItem('study_daily_xp')) || { date: "", amount: 0 }
+    dailyXP: JSON.parse(localStorage.getItem('study_daily_xp')) || { date: "", amount: 0 },
+    theme: localStorage.getItem('study_theme') || 'default'
 };
 
 // Study Buddy Global Voice
@@ -40,8 +41,8 @@ function updateStudyBuddy() {
 // --- Initialization ---
 window.onload = () => {
     // Sync Daily XP
-    const today = new Date().toLocaleDateString();
-    if (!state.dailyXP || state.dailyXP.date !== today) {
+    const today = new Date().toDateString();
+    if (state.dailyXP.date !== today) {
         state.dailyXP = { date: today, amount: 0 };
         localStorage.setItem('study_daily_xp', JSON.stringify(state.dailyXP));
     }
@@ -71,6 +72,16 @@ window.onload = () => {
     updateDailyGoalDisplay();
     showSection('dashboard');
 };
+
+function setTheme(theme) {
+    state.theme = theme;
+    localStorage.setItem('study_theme', theme);
+    document.body.className = theme === 'default' ? '' : `theme-${theme}`;
+    
+    // Update theme selectors UI
+    document.querySelectorAll('.theme-dot').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll(`.theme-${theme}`).forEach(el => el.classList.add('active'));
+}
 
 // --- Core UI & Stats ---
 function updateUI() {
@@ -368,55 +379,58 @@ function deleteExam(index) {
     renderExams();
 }
 
-// --- Audio Engine (Ultra-Link Stable Edition) ---
+// --- Audio Engine (DOM Linked Edition) ---
 const AudioEngine = {
-    audioObjects: {},
     sources: {
         rain: 'https://actions.google.com/sounds/v1/water/rain_on_roof.ogg',
         forest: 'https://actions.google.com/sounds/v1/nature/forest_ambience.ogg',
         lofi: 'https://actions.google.com/sounds/v1/ambiences/morning_routine.ogg'
     },
-    init() {
-        if (this.initialized) return;
-        Object.keys(this.sources).forEach(key => {
-            this.audioObjects[key] = new Audio(this.sources[key]);
-            this.audioObjects[key].loop = true;
-            this.audioObjects[key].volume = 0.5;
-        });
-        this.initialized = true;
-    },
     play(type) {
-        this.init();
-        Object.keys(this.audioObjects).forEach(key => {
-            if (key !== type) this.audioObjects[key].pause();
+        // Pause all first
+        ['rain', 'forest', 'lofi'].forEach(t => {
+            const a = document.getElementById(`audio-${t}`);
+            if (a) a.pause();
         });
-        const a = this.audioObjects[type];
-        if (a) {
-            a.currentTime = 0;
-            a.play().catch(e => {
-                console.warn('Audio play blocked, needs interaction');
-                showToast('Müzik için bir yere dokun!');
+
+        const targetAudio = document.getElementById(`audio-${type}`);
+        if (!targetAudio) return;
+        
+        // Ensure source is set
+        if (!targetAudio.src || targetAudio.src === '') {
+            targetAudio.src = this.sources[type];
+            targetAudio.volume = 0.5;
+        }
+
+        targetAudio.currentTime = 0;
+        const playPromise = targetAudio.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(e => {
+                console.warn('Audio blocked. Wait for user interaction.', e);
+                showToast('Müzik çalmak için belgeye tıklayın!');
             });
         }
     },
     pauseAll() {
-        Object.values(this.audioObjects).forEach(a => a.pause());
+        ['rain', 'forest', 'lofi'].forEach(t => {
+            const a = document.getElementById(`audio-${t}`);
+            if (a) a.pause();
+        });
     }
 };
 
 function toggleSound(type) {
-    const btn = document.getElementById(`sound-${soundType(type)}`);
-    // soundType logic to match potential ID variants
-    function soundType(t) { return t; }
+    const btn = document.getElementById(`sound-${type}`);
+    const isActive = btn.classList.contains('active');
     
-    // Reset buttons
+    // Reset visual buttons
     ['rain', 'forest', 'lofi'].forEach(t => {
         const b = document.getElementById(`sound-${t}`);
-        if (b && t !== type) b.classList.remove('active');
+        if (b) b.classList.remove('active');
     });
 
-    const activeBtn = document.getElementById(`sound-${type}`);
-    if (activeBtn.classList.toggle('active')) {
+    if (!isActive) {
+        btn.classList.add('active');
         AudioEngine.play(type);
         showToast(`${type.toUpperCase()} sesi açıldı. 🎵`);
     } else {

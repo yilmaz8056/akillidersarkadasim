@@ -84,6 +84,22 @@ main {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* Layout Tweaks for Pages */
+#timer, #tasks, #flashcards {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+#timer {
+    min-height: 80vh;
+    justify-content: center;
+}
+#timer > div, #tasks > div, #flashcards > div {
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+}
+
 /* Cards & Stats */
 .stat-card {
     background: var(--glass-bg); padding: 1.5rem; border-radius: 24px;
