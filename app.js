@@ -14,11 +14,23 @@ let state = {
     
     weeklyFocus: JSON.parse(localStorage.getItem('study_weekly_focus')) || [0, 0, 0, 0, 0, 0, 0],
     
-    // V9/10 Fields
+    // Core State Recovery
+    inventory: JSON.parse(localStorage.getItem('study_inventory')) || ['👤'],
+    exams: JSON.parse(localStorage.getItem('study_exams')) || [],
+    activeAvatar: localStorage.getItem('study_avatar') || '👤',
+    quests: JSON.parse(localStorage.getItem('study_quests')) || { date: "", active: [] },
+    subjectXP: JSON.parse(localStorage.getItem('study_sub_xp')) || {
+        'Matematik': 0, 'Fen Bilimleri': 0, 'Türkçe': 0, 'Sosyal Bilgiler': 0, 'İngilizce': 0, 'Din Kültürü': 0
+    },
+    level: parseInt(localStorage.getItem('study_level')) || 1,
+    dailyXP: JSON.parse(localStorage.getItem('study_daily_xp')) || { date: new Date().toDateString(), amount: 0 },
+    
     assignments: JSON.parse(localStorage.getItem('study_assignments')) || [],
     lastRiddleDate: localStorage.getItem('study_riddle_date') || "",
     library: JSON.parse(localStorage.getItem('study_library')) || []
 };
+
+function todayDate() { return new Date().toDateString(); }
 
 const RIDDLES = [
     { q: "Sıra sıra odalar, birbirini kovalar.", a: "tren" },
@@ -50,35 +62,18 @@ function updateStudyBuddy() {
 
 // --- Initialization ---
 window.onload = () => {
-    // Sync Daily XP & Reward Modal
     const today = new Date().toDateString();
-    if (state.dailyXP.date !== today) {
+
+    // Daily Goal & Quest Sync
+    if (!state.dailyXP || state.dailyXP.date !== today) {
         state.dailyXP = { date: today, amount: 0 };
         localStorage.setItem('study_daily_xp', JSON.stringify(state.dailyXP));
-        
-        // Show Daily Reward
         setTimeout(() => {
             const rewardModal = document.getElementById('daily-reward-modal');
             if (rewardModal) rewardModal.classList.add('show');
         }, 1500);
     }
     
-    // Safegaurd Market Inventory
-    if (!Array.isArray(state.inventory)) {
-        state.inventory = ['👤'];
-        localStorage.setItem('study_inventory', JSON.stringify(state.inventory));
-    }
-    // PWA Service Worker Registration
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
-            .then(() => console.log('PWA hazır! 📱'))
-            .catch(err => console.log('PWA hatası:', err));
-    }
-
-    // Inject Daily Tip Gamification
-    const tipEl = document.getElementById('daily-tip-text');
-    if (tipEl) tipEl.innerText = DAILY_TIPS[Math.floor(Math.random() * DAILY_TIPS.length)];
-
     checkStreak();
     checkDailyQuests();
     setTheme(state.theme);
@@ -92,10 +87,44 @@ window.onload = () => {
     renderAssignments();
     renderRiddle();
     renderLibrary();
-    renderExams(); // Also renders countdown
+    renderHeatmap();
     updateDailyGoalDisplay();
     showSection('dashboard');
+
+    // Global Audio Listener Unlock (V11)
+    document.addEventListener('click', () => {
+        if (typeof AudioEngine !== 'undefined') {
+            const resumeCtx = () => {
+                if (AudioEngine.audioCtx && AudioEngine.audioCtx.state === 'suspended') {
+                    AudioEngine.audioCtx.resume();
+                }
+            };
+            resumeCtx();
+        }
+    }, { once: true });
 };
+
+function saveAssignments() { localStorage.setItem('study_assignments', JSON.stringify(state.assignments)); }
+
+function renderHeatmap() {
+    const container = document.getElementById('focus-heatmap');
+    if (!container) return;
+    
+    // Scale focus minutes into 0-1 range for color steps
+    // weeklyFocus [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+    const days = ['Pt', 'Sa', 'Çr', 'Pr', 'Cu', 'Ct', 'Pz'];
+    container.innerHTML = state.weeklyFocus.map((val, i) => {
+        const opacity = Math.max(0.1, Math.min(val / 60, 1)); // Max: 60 mins focus
+        return `<div class="heatmap-day" style="background: rgba(0, 210, 255, ${opacity});" data-val="${days[i]}: ${val} dk"></div>`;
+    }).join('');
+}
+
+function toggleDarkMode() {
+    state.theme = state.theme === 'dark' ? 'default' : 'dark';
+    localStorage.setItem('study_theme', state.theme);
+    setTheme(state.theme);
+    showToast(state.theme === 'dark' ? "Gece Modu Aktif 🌙" : "Gündüz Modu Aktif ☀️");
+}
 
 function renderLibrary() {
     const list = document.getElementById('library-list');

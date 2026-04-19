@@ -1,18 +1,27 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
 
 :root {
-    --bg-dark: #0f0c29;
+    --primary-bg: #0f0c29;
     --bg-gradient: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-    --accent-blue: #00d2ff;
-    --accent-purple: #9d50bb;
-    --glass-bg: rgba(255, 255, 255, 0.05);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    --glass-bg: rgba(255, 255, 255, 0.08);
+    --glass-border: rgba(255, 255, 255, 0.15);
     --text-primary: #ffffff;
     --text-secondary: rgba(255, 255, 255, 0.7);
-    --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    --accent-blue: #00d2ff;
+    --accent-purple: #9d50bb;
     --accent-gold: #ffd700;
-    --zen-glow: rgba(0, 210, 255, 0.15);
+    --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    --zen-glow: rgba(0, 210, 255, 0.5);
+}
+
+body.theme-dark {
+    --primary-bg: #050510;
+    --bg-gradient: linear-gradient(135deg, #050510 0%, #1a1a2e 100%);
+    --glass-bg: rgba(0, 0, 0, 0.4);
+    --glass-border: rgba(255, 255, 255, 0.05);
+    --accent-blue: #0088ff;
+    --accent-purple: #6a11cb;
+    --zen-glow: rgba(106, 17, 203, 0.5);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
@@ -158,6 +167,12 @@ body.zen-mode .breathing-aura { display: block; }
 /* Battle Pass Rewards */
 .chest-ready { animation: shake 0.5s infinite; cursor: pointer; filter: drop-shadow(0 0 10px gold); }
 @keyframes shake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-5deg); } 75% { transform: rotate(5deg); } }
+
+/* V11: Heatmap Styling */
+.heatmap-day { width: 30px; height: 30px; border-radius: 6px; position: relative; transition: 0.3s; }
+.heatmap-day:hover { transform: scale(1.15); z-index: 5; }
+.heatmap-day::after { content: attr(data-val); position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 0.6rem; background: black; color: white; padding: 2px 5px; border-radius: 4px; display: none; white-space: nowrap; }
+.heatmap-day:hover::after { display: block; }
 
 /* Animated Mascot Pets */
 .avatar-large.animated-pet { animation: floatingPet 3s infinite ease-in-out; position: relative; }
