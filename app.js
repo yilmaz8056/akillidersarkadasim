@@ -387,43 +387,83 @@ function deleteExam(index) {
     renderExams();
 }
 
-// --- Audio Engine (Stable Wikimedia Edition) ---
+// --- Generative Web Audio Engine (V5 Offline Synthesis) ---
 const AudioEngine = {
-    sources: {
-        rain: 'https://upload.wikimedia.org/wikipedia/commons/b/b5/Rain_on_tin_roof.mp3',
-        forest: 'https://upload.wikimedia.org/wikipedia/commons/0/0d/Bird_Singing_in_the_Forest_%28Spring%2C_Poland%29.mp3',
-        lofi: 'https://upload.wikimedia.org/wikipedia/commons/2/23/Gymnop%C3%A9die_No._1.mp3'
+    audioCtx: null,
+    activeNodes: [],
+    
+    initContext() {
+        if (!this.audioCtx) {
+            this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (this.audioCtx.state === 'suspended') {
+            this.audioCtx.resume();
+        }
     },
+    
     play(type) {
-        // Pause all first
-        ['rain', 'forest', 'lofi'].forEach(t => {
-            const a = document.getElementById(`audio-${t}`);
-            if (a) a.pause();
-        });
-
-        const targetAudio = document.getElementById(`audio-${type}`);
-        if (!targetAudio) return;
+        this.pauseAll();
+        this.initContext();
         
-        // Ensure source is set
-        if (!targetAudio.src || targetAudio.src === '') {
-            targetAudio.src = this.sources[type];
-            targetAudio.volume = 0.5;
-        }
+        const gainNode = this.audioCtx.createGain();
+        gainNode.gain.value = 0.3; // Default volume
+        gainNode.connect(this.audioCtx.destination);
+        this.activeNodes.push(gainNode);
 
-        targetAudio.currentTime = 0;
-        const playPromise = targetAudio.play();
-        if (playPromise !== undefined) {
-            playPromise.catch(e => {
-                console.warn('Audio blocked. Wait for user interaction.', e);
-                showToast('Müzik çalmak için belgeye tıklayın!');
+        if (type === 'rain') {
+            const bufferSize = this.audioCtx.sampleRate * 2;
+            const buffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i<bufferSize; i++) data[i] = Math.random() * 2 - 1;
+            
+            const noise = this.audioCtx.createBufferSource();
+            noise.buffer = buffer; noise.loop = true;
+            
+            const filter = this.audioCtx.createBiquadFilter();
+            filter.type = 'lowpass'; filter.frequency.value = 400; // Muffled rain
+            
+            noise.connect(filter); filter.connect(gainNode);
+            noise.start(); this.activeNodes.push(noise);
+            gainNode.gain.value = 0.5;
+            
+        } else if (type === 'forest') {
+            // Simulated wind via modulated noise
+            const bufferSize = this.audioCtx.sampleRate * 2;
+            const buffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i<bufferSize; i++) data[i] = Math.random() * 2 - 1;
+            
+            const noise = this.audioCtx.createBufferSource();
+            noise.buffer = buffer; noise.loop = true;
+            
+            const filter = this.audioCtx.createBiquadFilter();
+            filter.type = 'bandpass'; filter.frequency.value = 1000;
+            
+            noise.connect(filter); filter.connect(gainNode);
+            noise.start(); this.activeNodes.push(noise);
+            gainNode.gain.value = 0.15;
+            
+        } else if (type === 'lofi') {
+            // Gentle ambient drone chord
+            const freqs = [220, 277.18, 329.63, 440]; // A major 7th vibes
+            freqs.forEach(f => {
+                const osc = this.audioCtx.createOscillator();
+                osc.type = 'sine'; osc.frequency.value = f;
+                osc.connect(gainNode); osc.start();
+                this.activeNodes.push(osc);
             });
+            gainNode.gain.value = 0.1;
         }
     },
+    
     pauseAll() {
-        ['rain', 'forest', 'lofi'].forEach(t => {
-            const a = document.getElementById(`audio-${t}`);
-            if (a) a.pause();
+        this.activeNodes.forEach(node => {
+            if (node.stop) {
+                try { node.stop(); } catch(e){}
+            }
+            if (node.disconnect) node.disconnect();
         });
+        this.activeNodes = [];
     }
 };
 
@@ -431,7 +471,6 @@ function toggleSound(type) {
     const btn = document.getElementById(`sound-${type}`);
     const isActive = btn.classList.contains('active');
     
-    // Reset visual buttons
     ['rain', 'forest', 'lofi'].forEach(t => {
         const b = document.getElementById(`sound-${t}`);
         if (b) b.classList.remove('active');
@@ -440,11 +479,27 @@ function toggleSound(type) {
     if (!isActive) {
         btn.classList.add('active');
         AudioEngine.play(type);
-        showToast(`${type.toUpperCase()} sesi açıldı. 🎵`);
+        showToast(`${type.toUpperCase()} sentezi başladı. 🎵`);
     } else {
         AudioEngine.pauseAll();
         showToast('Ses kapatıldı.');
     }
+}
+
+// --- PDF Print (Başarı Karnesi) ---
+function exportPDFReport() {
+    const userDisplay = document.getElementById('username-input') && document.getElementById('username-input').value ? document.getElementById('username-input').value : 'Kahraman';
+    document.getElementById('karne-user').innerText = userDisplay;
+    document.getElementById('karne-date').innerText = new Date().toLocaleDateString();
+    
+    document.getElementById('karne-level').innerText = `Seviye ${state.level}`;
+    document.getElementById('karne-xp').innerText = `${state.xp} XP / ${state.coins} DP`;
+    document.getElementById('karne-tasks').innerText = `${state.tasksCompleted} Adet`;
+    
+    const focusTotal = state.weeklyFocus.reduce((a,b) => a+b, 0);
+    document.getElementById('karne-focus').innerText = `${focusTotal} Dakika`;
+    
+    window.print();
 }
 
 // --- Enhanced Quiz Bank (Level-Based) ---

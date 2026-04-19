@@ -12,6 +12,7 @@
     --text-secondary: rgba(255, 255, 255, 0.7);
     --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     --accent-gold: #ffd700;
+    --zen-glow: rgba(0, 210, 255, 0.15);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
@@ -90,11 +91,40 @@ main { padding: 3rem; overflow-y: auto; overflow-x: hidden; height: 100vh; posit
 .mobile-top-bar { display: none; }
 .desktop-only { display: block; }
 
-/* Modals */
+/* Modals & PDF Karne */
 .modal { display: none; position: fixed; z-index: 5000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); align-items: center; justify-content: center; }
 .modal.show { display: flex; }
 .modal-content { background: #1a1a2e; border: 1px solid var(--glass-border); padding: 2rem; width: 92%; max-width: 480px; border-radius: 24px; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.8); max-height: 85vh; overflow-y: auto; }
 .close { position: absolute; right: 20px; top: 15px; font-size: 2rem; cursor: pointer; color: var(--text-secondary); }
+
+/* Zen Mode CSS */
+body.zen-mode aside, 
+body.zen-mode .mobile-top-bar, 
+body.zen-mode .study-buddy-container,
+body.zen-mode .mini-stats-bar,
+body.zen-mode .header-row p { display: none !important; }
+
+body.zen-mode main { padding: 0 !important; display: flex !important; justify-content: center !important; align-items: center !important; height: 100vh !important; }
+body.zen-mode .section#timer { background: transparent; border: none; box-shadow: none; animation: none; transform: none; min-height: initial; justify-content: center; align-items: center; }
+body.zen-mode .pomodoro-container { text-align: center; }
+body.zen-mode .timer-display { font-size: 14vw; position: relative; display: inline-block; }
+
+/* Breathing Circle Animation for Zen Mode */
+.breathing-aura { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; height: 350px; border-radius: 50%; background: radial-gradient(circle, var(--zen-glow) 0%, transparent 70%); z-index: -1; animation: breatheBase 8s infinite ease-in-out; display: none; pointer-events: none; }
+body.zen-mode .breathing-aura { display: block; }
+
+@keyframes breatheBase {
+    0%, 100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.3; }
+    50% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
+}
+
+/* Print Layout for "Başarı Karnesi" */
+@media print {
+    body * { visibility: hidden; }
+    #karne-print-container, #karne-print-container * { visibility: visible; }
+    #karne-print-container { position: absolute; left: 0; top: 0; width: 100%; color: black !important; background: white !important; }
+    .karne-box { border: 2px solid #555; border-radius: 10px; padding: 20px; font-family: sans-serif; }
+}
 
 /* Spaced Repetition Buttons & Flashcard 3D Logic */
 .flashcard-container { perspective: 1000px; width: 100%; height: 250px; cursor: pointer; }

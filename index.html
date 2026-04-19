@@ -197,8 +197,10 @@
                     <div class="header-row">
                         <h2 id="timer-label">Çalışma Zamanı</h2>
                         <p>Derin bir nefes al ve başla.</p>
+                    <div class="timer-display" id="time-display">
+                        <div class="breathing-aura"></div>
+                        25:00
                     </div>
-                    <div class="timer-display" id="time-display">25:00</div>
                     <div class="sound-controls">
                         <button class="sound-btn" onclick="toggleSound('rain')" id="sound-rain"><i class="fas fa-cloud-rain"></i></button>
                         <button class="sound-btn" onclick="toggleSound('forest')" id="sound-forest"><i class="fas fa-tree"></i></button>
@@ -265,6 +267,9 @@
                                 Yükle <input type="file" id="import-file" hidden onchange="importData(this)">
                             </label>
                         </div>
+                        <button class="btn btn-outline" onclick="exportPDFReport()" style="width:100%; margin-top:10px; border-color:var(--accent-gold); color:var(--accent-gold);">
+                            <i class="fas fa-file-pdf"></i> Başarı Karnesi İndir
+                        </button>
                     </div>
                 </div>
             </section>
@@ -318,6 +323,30 @@
                 +50 <i class="fas fa-coins" style="color:var(--accent-gold);"></i>
             </div>
             <button class="btn btn-primary" style="margin-top:2rem; width:100%; padding:15px;" onclick="claimDailyReward()">Topla ve Başla 🚀</button>
+        </div>
+    </div>
+
+    <!-- PDF Printable Report Container -->
+    <div id="karne-print-container" style="display:none; padding:40px;">
+        <div class="karne-box">
+            <h1 style="text-align:center; color:#333; margin-bottom:10px;">Akıllı Ders Arkadaşım Başarı Karnesi</h1>
+            <p style="text-align:center; font-style:italic; margin-bottom:30px;">"Başarı, her gün tekrarlanan küçük çabaların toplamıdır."</p>
+            <hr style="margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                <div><strong>Kullanıcı Adı:</strong> <span id="karne-user">Öğrenci</span></div>
+                <div><strong>Tarih:</strong> <span id="karne-date"></span></div>
+            </div>
+            <table style="width:100%; border-collapse:collapse; margin-bottom:20px;">
+                <tr style="background:#eee;">
+                    <th style="border:1px solid #ddd; padding:8px; text-align:left;">Kategori</th>
+                    <th style="border:1px solid #ddd; padding:8px; text-align:center;">Değer</th>
+                </tr>
+                <tr><td style="border:1px solid #ddd; padding:8px;">Mevcut Seviye</td><td style="border:1px solid #ddd; padding:8px; text-align:center;" id="karne-level"></td></tr>
+                <tr><td style="border:1px solid #ddd; padding:8px;">Toplam Toplanan XP</td><td style="border:1px solid #ddd; padding:8px; text-align:center;" id="karne-xp"></td></tr>
+                <tr><td style="border:1px solid #ddd; padding:8px;">Tamamlanan Görevler</td><td style="border:1px solid #ddd; padding:8px; text-align:center;" id="karne-tasks"></td></tr>
+                <tr><td style="border:1px solid #ddd; padding:8px;">Haftalık Odak Süresi</td><td style="border:1px solid #ddd; padding:8px; text-align:center;" id="karne-focus"></td></tr>
+            </table>
+            <div style="text-align:center; font-weight:bold; font-size:1.2rem; color:#2E7D32;">Tebrikler! Mükemmel Gidiyorsun! 🏆</div>
         </div>
     </div>
 
