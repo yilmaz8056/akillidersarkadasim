@@ -537,7 +537,7 @@ function renderQuizQuestion(subject, level) {
     body.innerHTML = `
         <div style="text-align:center; margin-bottom:20px;">
             <span class="stat-label">${subject} - Seviye ${level}</span>
-            <div style="font-size:0.7rem; font-weight:800; opacity:0.6; margin-top:4px;">SORU ${currentQuizIndex + 1} / 10</div>
+            <div style="font-size:0.7rem; font-weight:800; opacity:0.6; margin-top:4px;">SORU ${currentQuizIndex + 1} / ${currentQuizQuestions.length}</div>
         </div>
         <h3 style="margin-bottom:1.5rem; line-height:1.4;">${q.q}</h3>
         <div style="display:grid; gap:12px;">
@@ -582,14 +582,16 @@ function checkQuizAnswer(selected, correct, subject) {
 }
 
 function showQuizResults() {
-    const stars = correctAnswersCount >= 9 ? '⭐⭐⭐' : correctAnswersCount >= 6 ? '⭐⭐' : '⭐';
+    const totalQ = currentQuizQuestions.length || 1;
+    const ratio = correctAnswersCount / totalQ;
+    const stars = ratio >= 0.9 ? '⭐⭐⭐' : ratio >= 0.6 ? '⭐⭐' : '⭐';
     const body = document.getElementById('quiz-body');
     body.innerHTML = `
         <div style="text-align:center; padding: 20px 0;">
             <div style="font-size:3.5rem; margin-bottom:1rem; animation: pulse 1s infinite alternate;">🏆</div>
             <h2 style="color:var(--accent-gold);">Test Tamamlandı!</h2>
             <div class="star-rating">${stars}</div>
-            <p>10 soruda <b>${correctAnswersCount}</b> doğru yaptın.</p>
+            <p>${totalQ} soruda <b>${correctAnswersCount}</b> doğru yaptın.</p>
             <p style="opacity:0.7; font-size:0.8rem; margin-top:10px;">+${correctAnswersCount * 10} XP ve DP kazandın!</p>
             <button class="btn btn-primary" style="width:100%; margin-top:25px; padding:15px;" onclick="closeQuiz()">Harika! Devam Et</button>
         </div>

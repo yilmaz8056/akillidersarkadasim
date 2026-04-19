@@ -141,21 +141,36 @@ body.zen-mode .section.active { z-index: 3000; position: relative; }
 .btn-primary { background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); color: white; }
 .btn-outline { background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); }
 
+.mobile-top-bar { display: none; }
+.desktop-only { display: block; }
+
 /* Mobile Adaptations */
 @media (max-width: 900px) {
-    .app-container { grid-template-columns: 1fr; }
+    .app-container { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+    
+    .mobile-top-bar {
+        display: flex !important; justify-content: space-between; align-items: center;
+        padding: 0.8rem 1.2rem; background: rgba(15, 12, 41, 0.85); backdrop-filter: blur(15px);
+        border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 2500;
+    }
+    .logo-text { font-weight: 800; font-size: 1.1rem; background: linear-gradient(to right, var(--accent-blue), var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .mobile-top-bar .avatar { width: 35px; height: 35px; font-size: 1rem; }
+
     aside {
         position: fixed; bottom: 15px; left: 10px; right: 10px;
         height: 70px; flex-direction: row; border-radius: 20px; padding: 0 10px;
-        z-index: 3000; background: rgba(15, 12, 41, 0.9);
+        z-index: 3000; background: rgba(15, 12, 41, 0.95); backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
     }
-    .logo-section, .profile-card { display: none; }
+    .logo-section, .profile-card, .desktop-only { display: none !important; }
     nav { width: 100%; }
     nav ul { display: flex; justify-content: space-around; width: 100%; }
-    nav ul li { flex-direction: column; gap: 4px; padding: 5px; font-size: 0.6rem; }
-    nav ul li i { font-size: 1.2rem; }
-    main { padding: 1rem; padding-bottom: 100px; height: 100dvh; }
+    nav ul li { flex-direction: column; gap: 4px; padding: 5px; font-size: 0.65rem; }
+    nav ul li i { font-size: 1.25rem; }
+    
+    main { padding: 1rem; padding-bottom: 160px !important; height: 100dvh; }
     .dashboard-grid-layout, .subject-grid { grid-template-columns: 1fr !important; }
+    .section { padding-bottom: 40px; }
 }
 
 /* Animations */
