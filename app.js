@@ -434,37 +434,98 @@ function deleteExam(index) {
     renderExams();
 }
 
-// --- Stable HTML5 Audio Engine (V6 Fix) ---
+// --- V8 Absolute Offline Audio Synthesizer (0% Network) ---
 const AudioEngine = {
-    instances: {},
-    sources: {
-        rain: 'https://actions.google.com/sounds/v1/water/rain_on_roof.ogg',
-        forest: 'https://actions.google.com/sounds/v1/nature/forest_birds.ogg',
-        lofi: 'https://actions.google.com/sounds/v1/science_fiction/ambient_hum.ogg'
+    audioCtx: null,
+    activeNodes: [],
+    
+    initContext() {
+        if (!this.audioCtx) {
+            this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
     },
     
     play(type) {
-        this.pauseAll();
-        if (!this.instances[type]) {
-            this.instances[type] = new Audio(this.sources[type]);
-            this.instances[type].loop = true;
-            this.instances[type].volume = 0.5;
+        this.initContext();
+        // Force unpause in mobile/strict browsers
+        if (this.audioCtx.state === 'suspended') {
+            this.audioCtx.resume();
         }
+        this.pauseAll();
         
-        this.instances[type].currentTime = 0;
-        const playPromise = this.instances[type].play();
-        if (playPromise !== undefined) {
-            playPromise.catch(e => {
-                console.warn('Audio blocked:', e);
-                showToast('Müzik çalmak için ekrana tıklayın!');
+        const gainNode = this.audioCtx.createGain();
+        gainNode.gain.value = 0.8; // High volume to ensure audible feedback
+        gainNode.connect(this.audioCtx.destination);
+        this.activeNodes.push(gainNode);
+
+        if (type === 'rain') {
+            // Heavy Rain / Pink Noise Simulator
+            const bufferSize = this.audioCtx.sampleRate * 2;
+            const buffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i<bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.8; // Boost noise amplitude
+            
+            const noise = this.audioCtx.createBufferSource();
+            noise.buffer = buffer; noise.loop = true;
+            
+            const filter = this.audioCtx.createBiquadFilter();
+            filter.type = 'lowpass'; filter.frequency.value = 600; // Bright rain
+            
+            noise.connect(filter); filter.connect(gainNode);
+            noise.start(); this.activeNodes.push(noise);
+            
+        } else if (type === 'forest') {
+            // Bright Wind/Birds frequency band
+            const bufferSize = this.audioCtx.sampleRate * 2;
+            const buffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i<bufferSize; i++) data[i] = Math.random() * 2 - 1;
+            
+            const noise = this.audioCtx.createBufferSource();
+            noise.buffer = buffer; noise.loop = true;
+            
+            const filter = this.audioCtx.createBiquadFilter();
+            filter.type = 'bandpass'; filter.frequency.value = 1500;
+            
+            noise.connect(filter); filter.connect(gainNode);
+            noise.start(); this.activeNodes.push(noise);
+            gainNode.gain.value = 0.6;
+            
+        } else if (type === 'lofi') {
+            // 8-Bit LoFi Chords (C Major 7) for studying
+            const freqs = [261.63, 329.63, 392.00, 493.88];
+            freqs.forEach(f => {
+                const osc = this.audioCtx.createOscillator();
+                osc.type = 'triangle'; // Warmer retro sound
+                osc.frequency.value = f;
+                
+                // Slight detune for retro feel
+                osc.detune.value = Math.random() * 10 - 5;
+                
+                const oscGain = this.audioCtx.createGain();
+                oscGain.gain.value = 0.25;
+                
+                // LFO for volume wobble (Lo-fi tape effect)
+                const lfo = this.audioCtx.createOscillator();
+                lfo.type = 'sine'; lfo.frequency.value = 0.5;
+                const lfoGain = this.audioCtx.createGain();
+                lfoGain.gain.value = 0.1;
+                lfo.connect(lfoGain); lfoGain.connect(oscGain.gain);
+                
+                osc.connect(oscGain); oscGain.connect(gainNode);
+                osc.start(); lfo.start();
+                this.activeNodes.push(osc, lfo);
             });
+            gainNode.gain.value = 0.3;
         }
     },
     
     pauseAll() {
-        Object.values(this.instances).forEach(a => {
-            if (a) a.pause();
+        this.activeNodes.forEach(node => {
+            if (node.stop) { try { node.stop(); } catch(e){} }
+            if (node.disconnect) node.disconnect();
         });
+        this.activeNodes = [];
     }
 };
 

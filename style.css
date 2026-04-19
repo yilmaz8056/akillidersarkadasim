@@ -110,12 +110,12 @@ body.zen-mode .pomodoro-container { text-align: center; }
 body.zen-mode .timer-display { font-size: 14vw; position: relative; display: inline-block; }
 
 /* Breathing Circle Animation for Zen Mode */
-.breathing-aura { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; height: 350px; border-radius: 50%; background: radial-gradient(circle, var(--zen-glow) 0%, transparent 70%); z-index: -1; animation: breatheBase 8s infinite ease-in-out; display: none; pointer-events: none; }
+.breathing-aura { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, var(--zen-glow) 0%, transparent 65%); z-index: -1; animation: breatheBase 8s infinite ease-in-out; display: none; pointer-events: none; filter: blur(20px); }
 body.zen-mode .breathing-aura { display: block; }
 
 @keyframes breatheBase {
-    0%, 100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.3; }
-    50% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
+    0%, 100% { transform: translate(-50%, -50%) scale(0.6); opacity: 0.2; }
+    50% { transform: translate(-50%, -50%) scale(1.8); opacity: 0.9; }
 }
 
 /* Print Layout for "Başarı Karnesi" */
@@ -131,6 +131,10 @@ body.zen-mode .breathing-aura { display: block; }
 .flashcard-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s; transform-style: preserve-3d; }
 .flashcard-container.flipped .flashcard-inner { transform: rotateY(180deg); }
 .flashcard-front, .flashcard-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: var(--card-shadow); font-size: 1.5rem; font-weight: 600; flex-direction: column; }
+.sound-controls { display: flex; justify-content: center; gap: 1.5rem; margin: 1.5rem 0; align-items: center; }
+.sound-btn { background: rgba(255, 255, 255, 0.1); border: 2px solid transparent; border-radius: 20px; width: 65px; height: 65px; display: flex; justify-content: center; align-items: center; font-size: 2rem; cursor: pointer; color: white; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+.sound-btn:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-5px) scale(1.1); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+.sound-btn.active { background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); border-color: rgba(255,255,255,0.5); transform: translateY(-3px) scale(1.15); box-shadow: 0 10px 30px rgba(0, 210, 255, 0.4); animation: pulse 2s infinite; }
 .flashcard-back { transform: rotateY(180deg); background: linear-gradient(135deg, rgba(0, 210, 255, 0.1), rgba(157, 80, 187, 0.1)); border-color: var(--accent-blue); }
 .srs-controls { display: flex; justify-content: center; gap: 10px; margin-top: 15px; }
 .srs-btn { padding: 8px 15px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; color: white; font-size: 0.8rem; pointer-events: auto; }

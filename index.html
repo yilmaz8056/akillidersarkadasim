@@ -218,19 +218,15 @@
                     <div class="header-row">
                         <h2 id="timer-label">Çalışma Zamanı</h2>
                         <p>Derin bir nefes al ve başla.</p>
+                    </div>
                     <div class="timer-display" id="time-display">
                         <div class="breathing-aura"></div>
                         25:00
                     </div>
                     <div class="sound-controls">
-                        <button class="sound-btn" onclick="toggleSound('rain')" id="sound-rain"><i class="fas fa-cloud-rain"></i></button>
-                        <button class="sound-btn" onclick="toggleSound('forest')" id="sound-forest"><i class="fas fa-tree"></i></button>
-                        <button class="sound-btn" onclick="toggleSound('lofi')" id="sound-lofi"><i class="fas fa-music"></i></button>
-                        
-                        <!-- Persistent Audio Elements -->
-                        <audio id="audio-rain" loop preload="none" crossorigin="anonymous"></audio>
-                        <audio id="audio-forest" loop preload="none" crossorigin="anonymous"></audio>
-                        <audio id="audio-lofi" loop preload="none" crossorigin="anonymous"></audio>
+                        <button class="sound-btn" onclick="toggleSound('rain')" id="sound-rain" title="Yağmur Sesi">🌧️</button>
+                        <button class="sound-btn" onclick="toggleSound('forest')" id="sound-forest" title="Orman Sesi">🌲</button>
+                        <button class="sound-btn" onclick="toggleSound('lofi')" id="sound-lofi" title="Lofi Frekans">🎧</button>
                     </div>
                     <div class="timer-controls">
                         <button class="btn btn-outline" onclick="resetTimer()">Sıfırla</button>
