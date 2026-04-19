@@ -22,7 +22,8 @@ let state = {
     },
     level: parseInt(localStorage.getItem('study_level')) || 1,
     dailyXP: JSON.parse(localStorage.getItem('study_daily_xp')) || { date: "", amount: 0 },
-    theme: localStorage.getItem('study_theme') || 'default'
+    theme: localStorage.getItem('study_theme') || 'default',
+    weeklyFocus: JSON.parse(localStorage.getItem('study_weekly_focus')) || [0, 0, 0, 0, 0, 0, 0]
 };
 
 // Study Buddy Global Voice
@@ -40,11 +41,17 @@ function updateStudyBuddy() {
 
 // --- Initialization ---
 window.onload = () => {
-    // Sync Daily XP
+    // Sync Daily XP & Reward Modal
     const today = new Date().toDateString();
     if (state.dailyXP.date !== today) {
         state.dailyXP = { date: today, amount: 0 };
         localStorage.setItem('study_daily_xp', JSON.stringify(state.dailyXP));
+        
+        // Show Daily Reward
+        setTimeout(() => {
+            const rewardModal = document.getElementById('daily-reward-modal');
+            if (rewardModal) rewardModal.classList.add('show');
+        }, 1500);
     }
     
     // Safeguard Market Inventory
@@ -101,6 +108,7 @@ function updateUI() {
     updateLevel();
     renderBadges();
     renderChart();
+    renderFocusChart();
     renderQuests();
     renderLeaderboard();
     updateDailyGoalDisplay();
@@ -379,12 +387,12 @@ function deleteExam(index) {
     renderExams();
 }
 
-// --- Audio Engine (DOM Linked Edition) ---
+// --- Audio Engine (Stable Wikimedia Edition) ---
 const AudioEngine = {
     sources: {
-        rain: 'https://actions.google.com/sounds/v1/water/rain_on_roof.ogg',
-        forest: 'https://actions.google.com/sounds/v1/nature/forest_ambience.ogg',
-        lofi: 'https://actions.google.com/sounds/v1/ambiences/morning_routine.ogg'
+        rain: 'https://upload.wikimedia.org/wikipedia/commons/b/b5/Rain_on_tin_roof.mp3',
+        forest: 'https://upload.wikimedia.org/wikipedia/commons/0/0d/Bird_Singing_in_the_Forest_%28Spring%2C_Poland%29.mp3',
+        lofi: 'https://upload.wikimedia.org/wikipedia/commons/2/23/Gymnop%C3%A9die_No._1.mp3'
     },
     play(type) {
         // Pause all first
@@ -709,6 +717,17 @@ function renderChart() {
     }).join('');
 }
 
+function renderFocusChart() {
+    const container = document.getElementById('focus-chart-container');
+    if (!container) return;
+    const days = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+    const maxVal = Math.max(...state.weeklyFocus, 60);
+    container.innerHTML = state.weeklyFocus.map((val, i) => {
+        const height = Math.max((val / maxVal) * 100, 5); // Ensure minimum visible bar
+        return `<div class="chart-bar" style="height: ${height}%; background: var(--accent-blue);" data-day="${days[i]}" onclick="showToast('${days[i]}: ${val} dakika odaklandın! 🧘')"></div>`;
+    }).join('');
+}
+
 function renderBadges() {
     const container = document.getElementById('badges-display');
     if (!container) return;
@@ -783,10 +802,24 @@ function renderFlashcards() {
     grid.innerHTML = state.flashcards.map(card => `
         <div class="flashcard-container" onclick="this.classList.toggle('flipped')">
             <div class="flashcard-inner">
-                <div class="flashcard-front">${card.front}</div>
-                <div class="flashcard-back">${card.back}</div>
+                <div class="flashcard-front" style="padding:1rem;">${card.front}</div>
+                <div class="flashcard-back" style="padding:1rem; display:flex; flex-direction:column; justify-content:center;">
+                    <div style="flex:1; display:flex; align-items:center; justify-content:center;">${card.back}</div>
+                    <div class="srs-controls" onclick="event.stopPropagation()">
+                        <button class="srs-btn srs-zor" onclick="rateCard(${card.id}, 1)">Zor</button>
+                        <button class="srs-btn srs-orta" onclick="rateCard(${card.id}, 2)">Orta</button>
+                        <button class="srs-btn srs-kolay" onclick="rateCard(${card.id}, 3)">Kolay</button>
+                    </div>
+                </div>
             </div>
         </div>`).join('');
+}
+
+function rateCard(id, score) {
+    const xpReward = score * 5;
+    addXP(xpReward);
+    const msgs = ["Daha çok çalışacağız! 💪", "Güzel, gelişiyorsun! 👍", "Çok Kolaydı! 🔥"];
+    showToast(msgs[score-1] + ` +${xpReward} XP`);
 }
 
 let timerInterval; let timeLeft = 25 * 60; let isTimerRunning = false;
@@ -820,8 +853,21 @@ function showSessionRecap(minutes) {
     const xp = Math.floor(minutes * 0.8) + (minutes >= 25 ? 10 : 0);
     const coins = Math.floor(xp / 2);
     
-    // Using a toast for now to keep it premium and non-intrusive
+    // Add to Focus Analytics
+    const dayIndex = new Date().getDay();
+    state.weeklyFocus[dayIndex] += minutes;
+    localStorage.setItem('study_weekly_focus', JSON.stringify(state.weeklyFocus));
+    renderFocusChart();
+    
     showToast(`Odaklanma Tamam! 🧘 ${minutes} dk çalıştın. +${xp} XP ve +${coins} DP kazandın!`);
+}
+
+function claimDailyReward() {
+    state.coins += 50;
+    localStorage.setItem('study_coins', state.coins);
+    updateUI();
+    document.getElementById('daily-reward-modal').classList.remove('show');
+    showToast('50 Coin kazandın! Mükemmel başlangıç! 🎉');
 }
 
 function closeQuiz() { 

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ders-arkadasim-v7-focus-final';
+const CACHE_NAME = 'ders-arkadasim-v8-mega-rewrite';
 const urlsToCache = [
   './index.html',
   './style.css',

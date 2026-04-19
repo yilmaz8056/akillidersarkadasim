@@ -7,7 +7,17 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f0c29">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister();
+                    console.log('SW Unregistered to clear cache overlay');
+                }
+            });
+        }
+    </script>
 </head>
 <body>
     <!-- Hidden Audio Engine -->
@@ -228,22 +238,31 @@
                     </div>
                 </div>
                 <div class="settings-grid">
+                    <!-- New: Focus Analytics -->
+                    <div class="stat-card" style="grid-column: 1 / -1;">
+                        <h3>Odaklanma Analizi (Bu Hafta)</h3>
+                        <p style="font-size:0.8rem; margin-bottom:1rem; opacity:0.7;">Günlük pomodoro dakikaların.</p>
+                        <div class="svg-chart" id="focus-chart-container" style="display:flex; align-items:flex-end; gap:8px; height:120px;">
+                            <!-- Bars will be generated via JS -->
+                            <div style="flex:1; text-align:center; color:var(--accent-blue);">Henüz veri yok.</div>
+                        </div>
+                    </div>
+                
                     <div class="stat-card">
                         <h3>Sınav Takvimi</h3>
-                        <div class="exam-input-row">
-                            <input type="text" id="exam-name" class="input-glass" placeholder="Ders Adı">
-                            <input type="date" id="exam-date" class="input-glass">
-                            <button class="btn btn-primary" onclick="addExam()">Ekle</button>
+                        <div class="exam-input-row" style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <input type="text" id="exam-name" class="input-glass" placeholder="Ders" style="flex:1;">
+                            <input type="date" id="exam-date" class="input-glass" style="flex:1;">
+                            <button class="btn btn-primary" onclick="addExam()" style="width:100%;">Ekle</button>
                         </div>
-                        <div id="exam-list" class="exam-list"></div>
+                        <div id="exam-list" class="exam-list" style="margin-top:10px;"></div>
                     </div>
                     <div class="stat-card">
                         <h3>Veri Yönetimi</h3>
-                        <p style="font-size:0.8rem; margin-bottom:1rem; opacity:0.7;">İlerlemeni yedekleyebilir veya başka cihazdan yükleyebilirsin.</p>
-                        <div style="display:flex; gap:10px;">
-                            <button class="btn btn-outline" onclick="exportData()">Dışa Aktar</button>
-                            <label class="btn btn-primary" style="cursor:pointer">
-                                İçe Aktar <input type="file" id="import-file" hidden onchange="importData(this)">
+                        <div style="display:flex; gap:10px; margin-top:1rem;">
+                            <button class="btn btn-outline" onclick="exportData()" style="flex:1;">Yedekle</button>
+                            <label class="btn btn-primary" style="cursor:pointer; flex:1; text-align:center;">
+                                Yükle <input type="file" id="import-file" hidden onchange="importData(this)">
                             </label>
                         </div>
                     </div>
@@ -289,6 +308,19 @@
         </div>
     </div>
 
-    <script src="app.js?v=3.9.0"></script>
+    <!-- New: Daily Reward Modal -->
+    <div id="daily-reward-modal" class="modal">
+        <div class="modal-content" style="text-align:center; padding:3rem;">
+            <div style="font-size:4rem; margin-bottom:1rem; animation: buddyFloat 2s infinite ease-in-out;">🎁</div>
+            <h2 style="color:var(--accent-gold); font-size:2rem; margin-bottom:10px;">Günlük Hediyen!</h2>
+            <p style="opacity:0.8; margin-bottom:20px;">Öğrenmeye ara vermediğin için teşekkürler.</p>
+            <div class="coin-display" style="font-size:2rem; font-weight:800; background:rgba(255,215,0,0.1); display:inline-block; padding:10px 20px; border-radius:15px; border:1px solid var(--accent-gold);">
+                +50 <i class="fas fa-coins" style="color:var(--accent-gold);"></i>
+            </div>
+            <button class="btn btn-primary" style="margin-top:2rem; width:100%; padding:15px;" onclick="claimDailyReward()">Topla ve Başla 🚀</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
 </body>
 </html>
