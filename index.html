@@ -4,10 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Akıllı Ders Arkadaşım | 6. Sınıf Başarı Paneli</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f0c29">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <!-- Hidden Audio Engine -->
+    <audio id="audio-rain" loop src="https://www.soundjay.com/nature/rain-07.mp3"></audio>
+    <audio id="audio-forest" loop src="https://www.soundjay.com/nature/forest-1.mp3"></audio>
+    <audio id="audio-lofi" loop src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"></audio>
+
     <div class="app-container">
         <!-- Desktop Sidebar Navigation -->
         <aside>
@@ -130,6 +137,12 @@
                 </div>
 
                 <div class="badges-row" id="badges-display"></div>
+
+                <!-- Simulated Leaderboard -->
+                <div class="leaderboard-card stat-card" style="margin-top:2rem;">
+                    <div class="stat-label"><i class="fas fa-trophy"></i> Haftalık Şampiyonlar</div>
+                    <div id="leaderboard-list" class="leaderboard-list"></div>
+                </div>
             </section>
 
             <!-- Lessons Section -->
@@ -231,6 +244,17 @@
         <div class="modal-content stat-card">
             <span class="close" onclick="closeQuiz()">&times;</span>
             <div id="quiz-body"></div>
+        </div>
+    </div>
+
+    <!-- Level Up Modal -->
+    <div id="level-up-modal" class="modal">
+        <div class="modal-content stat-card level-up-glow" style="text-align:center;">
+            <div style="font-size: 5rem; margin-bottom: 1rem;">🔥</div>
+            <h2 style="font-size: 2rem; background: linear-gradient(to right, #ffd700, #ff8c00); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">SEVİYE ATLADIN!</h2>
+            <p id="new-level-text" style="font-size: 1.5rem; font-weight: 800; margin: 15px 0;">Seviye 2</p>
+            <p style="opacity:0.7;">Harika gidiyorsun! Yeni eşyalar ve rozetler seni bekliyor.</p>
+            <button class="btn btn-primary" style="margin-top:2rem; width:100%;" onclick="document.getElementById('level-up-modal').classList.remove('show')">TAMAM! 🚀</button>
         </div>
     </div>
 
