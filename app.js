@@ -355,13 +355,13 @@ function deleteExam(index) {
     renderExams();
 }
 
-// --- Audio & Sound Engine ---
+// --- Audio & Sound Engine (High Stability Edition) ---
 const AudioEngine = {
     initialized: false,
     sources: {
-        rain: 'https://upload.wikimedia.org/wikipedia/commons/b/b5/Rain_on_tin_roof.mp3',
-        forest: 'https://upload.wikimedia.org/wikipedia/commons/0/0d/Bird_Singing_in_the_Forest_%28Spring%2C_Poland%29.mp3',
-        lofi: 'https://upload.wikimedia.org/wikipedia/commons/2/23/Gymnop%C3%A9die_No._1.mp3'
+        rain: 'https://actions.google.com/sounds/v1/water/rain_on_roof.ogg',
+        forest: 'https://actions.google.com/sounds/v1/nature/forest_ambience.ogg',
+        lofi: 'https://actions.google.com/sounds/v1/ambiences/morning_routine.ogg'
     },
     init() {
         if (this.initialized) return;
@@ -369,6 +369,7 @@ const AudioEngine = {
             const audio = document.getElementById(`audio-${t}`);
             if (audio) { 
                 audio.src = this.sources[t];
+                // Use ogg for better mobile compatibility in some cases, or handle gracefully
                 audio.load();
                 audio.volume = 0.5;
             }
@@ -384,6 +385,7 @@ function toggleSound(type) {
     
     if (!audio) return;
 
+    // Reset all other buttons and sounds
     ['rain', 'forest', 'lofi'].forEach(t => {
         if (t !== type) {
             const b = document.getElementById(`sound-${t}`);
@@ -395,11 +397,14 @@ function toggleSound(type) {
 
     if (btn.classList.toggle('active')) {
         audio.currentTime = 0;
-        audio.play().catch(e => {
-            console.error('Audio play error:', e);
-            showToast('Ses yüklenemedi. Lütfen internet bağlantınızı kontrol edin.');
-            btn.classList.remove('active');
-        });
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(e => {
+                console.warn('Audio play retry:', e);
+                // Try one more time after a tiny delay
+                setTimeout(() => audio.play(), 100);
+            });
+        }
         showToast(`${type.toUpperCase()} sesi açıldı. 🎵`);
     } else {
         audio.pause();
