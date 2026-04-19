@@ -26,6 +26,14 @@ let state = {
     weeklyFocus: JSON.parse(localStorage.getItem('study_weekly_focus')) || [0, 0, 0, 0, 0, 0, 0]
 };
 
+const DAILY_TIPS = [
+    "Su içmeyi unutma! Beynin su içtikçe daha iyi odaklanır. 💧",
+    "Günde 20 dakika kitap okumak dünyanı geliştirir. 📚",
+    "Küçük molalar ver, ama geri dönmeyi unutma! 🧘‍♂️",
+    "Matematik bir bulmacadır, sadece kuralları öğren. 🔢",
+    "Uykunu iyi alırsan okulda şampiyon olursun! 😴"
+];
+
 // Study Buddy Global Voice
 function updateStudyBuddy() {
     const buddyIcon = document.querySelector('.buddy-icon');
@@ -54,7 +62,7 @@ window.onload = () => {
         }, 1500);
     }
     
-    // Safeguard Market Inventory
+    // Safegaurd Market Inventory
     if (!Array.isArray(state.inventory)) {
         state.inventory = ['👤'];
         localStorage.setItem('study_inventory', JSON.stringify(state.inventory));
@@ -65,6 +73,10 @@ window.onload = () => {
             .then(() => console.log('PWA hazır! 📱'))
             .catch(err => console.log('PWA hatası:', err));
     }
+
+    // Inject Daily Tip Gamification
+    const tipEl = document.getElementById('daily-tip-text');
+    if (tipEl) tipEl.innerText = DAILY_TIPS[Math.floor(Math.random() * DAILY_TIPS.length)];
 
     checkStreak();
     checkDailyQuests();
@@ -119,11 +131,15 @@ function updateDailyGoalDisplay() {
     const current = state.dailyXP.amount || 0;
     const percent = Math.min(Math.round((current / goal) * 100), 100);
     
+    // Circular Progress
     const path = document.getElementById('daily-progress-path');
     const text = document.getElementById('daily-goal-text');
-    
     if (path) path.setAttribute('stroke-dasharray', `${percent}, 100`);
     if (text) text.innerText = `${percent}%`;
+    
+    // Battle Pass Progress Gamification Visual
+    const battlePassBar = document.getElementById('battle-pass-fill');
+    if (battlePassBar) battlePassBar.style.width = `${percent}%`;
 }
 
 function updateLevel() {
@@ -145,9 +161,23 @@ function showLevelUpModal(lv) {
     }
 }
 
+function createSparkles(x, y) {
+    for (let i = 0; i < 6; i++) {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'sparkle';
+        sparkle.style.left = `${x + (Math.random() - 0.5) * 40}px`;
+        sparkle.style.top = `${y + (Math.random() - 0.5) * 40}px`;
+        document.body.appendChild(sparkle);
+        setTimeout(() => sparkle.remove(), 1500);
+    }
+}
+
 function addXP(amount, subject = null) {
     state.xp += amount;
     state.coins += Math.floor(amount / 2); 
+    
+    // Auto-Trigger Gamification UI
+    createSparkles(window.innerWidth / 2, window.innerHeight / 2);
     
     // Track Daily XP
     state.dailyXP.amount = (state.dailyXP.amount || 0) + amount;
@@ -387,83 +417,37 @@ function deleteExam(index) {
     renderExams();
 }
 
-// --- Generative Web Audio Engine (V5 Offline Synthesis) ---
+// --- Stable HTML5 Audio Engine (V6 Fix) ---
 const AudioEngine = {
-    audioCtx: null,
-    activeNodes: [],
-    
-    initContext() {
-        if (!this.audioCtx) {
-            this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (this.audioCtx.state === 'suspended') {
-            this.audioCtx.resume();
-        }
+    instances: {},
+    sources: {
+        rain: 'https://actions.google.com/sounds/v1/water/rain_on_roof.ogg',
+        forest: 'https://actions.google.com/sounds/v1/nature/forest_birds.ogg',
+        lofi: 'https://actions.google.com/sounds/v1/science_fiction/ambient_hum.ogg'
     },
     
     play(type) {
         this.pauseAll();
-        this.initContext();
+        if (!this.instances[type]) {
+            this.instances[type] = new Audio(this.sources[type]);
+            this.instances[type].loop = true;
+            this.instances[type].volume = 0.5;
+        }
         
-        const gainNode = this.audioCtx.createGain();
-        gainNode.gain.value = 0.3; // Default volume
-        gainNode.connect(this.audioCtx.destination);
-        this.activeNodes.push(gainNode);
-
-        if (type === 'rain') {
-            const bufferSize = this.audioCtx.sampleRate * 2;
-            const buffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
-            const data = buffer.getChannelData(0);
-            for (let i = 0; i<bufferSize; i++) data[i] = Math.random() * 2 - 1;
-            
-            const noise = this.audioCtx.createBufferSource();
-            noise.buffer = buffer; noise.loop = true;
-            
-            const filter = this.audioCtx.createBiquadFilter();
-            filter.type = 'lowpass'; filter.frequency.value = 400; // Muffled rain
-            
-            noise.connect(filter); filter.connect(gainNode);
-            noise.start(); this.activeNodes.push(noise);
-            gainNode.gain.value = 0.5;
-            
-        } else if (type === 'forest') {
-            // Simulated wind via modulated noise
-            const bufferSize = this.audioCtx.sampleRate * 2;
-            const buffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
-            const data = buffer.getChannelData(0);
-            for (let i = 0; i<bufferSize; i++) data[i] = Math.random() * 2 - 1;
-            
-            const noise = this.audioCtx.createBufferSource();
-            noise.buffer = buffer; noise.loop = true;
-            
-            const filter = this.audioCtx.createBiquadFilter();
-            filter.type = 'bandpass'; filter.frequency.value = 1000;
-            
-            noise.connect(filter); filter.connect(gainNode);
-            noise.start(); this.activeNodes.push(noise);
-            gainNode.gain.value = 0.15;
-            
-        } else if (type === 'lofi') {
-            // Gentle ambient drone chord
-            const freqs = [220, 277.18, 329.63, 440]; // A major 7th vibes
-            freqs.forEach(f => {
-                const osc = this.audioCtx.createOscillator();
-                osc.type = 'sine'; osc.frequency.value = f;
-                osc.connect(gainNode); osc.start();
-                this.activeNodes.push(osc);
+        this.instances[type].currentTime = 0;
+        const playPromise = this.instances[type].play();
+        if (playPromise !== undefined) {
+            playPromise.catch(e => {
+                console.warn('Audio blocked:', e);
+                showToast('Müzik çalmak için ekrana tıklayın!');
             });
-            gainNode.gain.value = 0.1;
         }
     },
     
     pauseAll() {
-        this.activeNodes.forEach(node => {
-            if (node.stop) {
-                try { node.stop(); } catch(e){}
-            }
-            if (node.disconnect) node.disconnect();
+        Object.values(this.instances).forEach(a => {
+            if (a) a.pause();
         });
-        this.activeNodes = [];
     }
 };
 
@@ -955,4 +939,11 @@ function updateTimerDisplay() {
     const m = Math.floor(timeLeft/60); const s = timeLeft%60;
     document.getElementById('time-display').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
 }
-function resetTimer() { clearInterval(timerInterval); timeLeft = 25 * 60; updateTimerDisplay(); isTimerRunning = false; document.getElementById('timer-btn').innerText = 'Başlat'; }
+function resetTimer() {
+    clearInterval(timerInterval);
+    isTimerRunning = false;
+    timeLeft = 25 * 60;
+    updateTimerDisplay();
+    document.getElementById('timer-btn').innerText = 'Başlat';
+    document.body.classList.remove('zen-mode'); // Zen Mode escape fix
+}
