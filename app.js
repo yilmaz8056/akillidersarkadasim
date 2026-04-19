@@ -42,6 +42,7 @@ window.onload = () => {
     renderExams();
     renderMarket();
     renderLeaderboard();
+    updateDailyGoalDisplay();
     showSection('dashboard');
 };
 
@@ -65,6 +66,19 @@ function updateUI() {
     renderChart();
     renderQuests();
     renderLeaderboard();
+    updateDailyGoalDisplay();
+}
+
+function updateDailyGoalDisplay() {
+    const goal = 100; // Goal: 100 XP per day
+    const current = state.dailyXP.amount || 0;
+    const percent = Math.min(Math.round((current / goal) * 100), 100);
+    
+    const path = document.getElementById('daily-progress-path');
+    const text = document.getElementById('daily-goal-text');
+    
+    if (path) path.setAttribute('stroke-dasharray', `${percent}, 100`);
+    if (text) text.innerText = `${percent}%`;
 }
 
 function updateLevel() {
@@ -89,6 +103,11 @@ function showLevelUpModal(lv) {
 function addXP(amount, subject = null) {
     state.xp += amount;
     state.coins += Math.floor(amount / 2); 
+    
+    // Track Daily XP
+    state.dailyXP.amount = (state.dailyXP.amount || 0) + amount;
+    localStorage.setItem('study_daily_xp', JSON.stringify(state.dailyXP));
+
     localStorage.setItem('study_xp', state.xp);
     localStorage.setItem('study_coins', state.coins);
     
@@ -313,57 +332,156 @@ function deleteExam(index) {
     renderExams();
 }
 
-// --- Quiz System ---
+// --- Audio & Sound Engine ---
+const AudioEngine = {
+    initialized: false,
+    init() {
+        if (this.initialized) return;
+        ['rain', 'forest', 'lofi'].forEach(t => {
+            const audio = document.getElementById(`audio-${t}`);
+            if (audio) { audio.volume = 0.5; audio.play().then(() => audio.pause()).catch(() => {}); }
+        });
+        this.initialized = true;
+    }
+};
+
+function toggleSound(type) {
+    AudioEngine.init(); // Initialize on click
+    const btn = document.getElementById(`sound-${type}`);
+    const audio = document.getElementById(`audio-${type}`);
+    
+    ['rain', 'forest', 'lofi'].forEach(t => {
+        if (t !== type) {
+            const b = document.getElementById(`sound-${t}`);
+            const a = document.getElementById(`audio-${t}`);
+            if (b) b.classList.remove('active');
+            if (a) a.pause();
+        }
+    });
+
+    if (btn.classList.toggle('active')) {
+        audio.currentTime = 0;
+        audio.play().catch(() => showToast('Ses başlatılamadı.'));
+        showToast(`${type.toUpperCase()} sesi açıldı. 🎵`);
+    } else {
+        audio.pause();
+        showToast('Ses kapatıldı.');
+    }
+}
+
+// --- Enhanced Quiz Bank (Level-Based) ---
 const QUIZ_BANK = {
-    'Matematik': [
-        { q: '6 + 8 x 2 işleminin sonucu nedir?', a: ['22', '28', '20', '16'], c: 0 },
-        { q: 'Hangi sayı asaldır?', a: ['9', '15', '21', '13'], c: 3 },
-        { q: 'Dikdörtgenin alanı nasıl bulunur?', a: ['2 x (a+b)', 'a x b', 'a + b', 'a / b'], c: 1 }
-    ],
-    'Fen Bilimleri': [
-        { q: 'Güneş sistemindeki en büyük gezegen hangisidir?', a: ['Mars', 'Jüpiter', 'Satürn', 'Venüs'], c: 1 },
-        { q: 'Vücudumuzun temel yapı taşı nedir?', a: ['Doku', 'Organ', 'Hücre', 'Sistem'], c: 2 },
-        { q: 'Hangi kuvvet her zaman zıt yöndedir?', a: ['Yerçekimi', 'Kaldırma', 'Sürtünme', 'Manyetik'], c: 2 }
-    ],
-    'Türkçe': [
-        { q: 'Hangisi bir isim tamlamasıdır?', a: ['Mavi ev', 'Kapı kolu', 'Güzel çocuk', 'Hızlı araba'], c: 1 },
-        { q: 'Hangisi zıt anlamlı kelime çiftidir?', a: ['Siyah-Kara', 'Ak-Beyaz', 'İyi-Kötü', 'Hızlı-Süratli'], c: 2 },
-        { q: 'Cümlenin sonuna hangi işaret konur?', a: ['Virgül', 'Nokta', 'Ünlem', 'Soru İşareti'], c: 1 }
-    ],
-    'Sosyal Bilgiler': [
+    'Matematik': {
+        1: [
+            { q: '6 + 8 x 2 işleminin sonucu nedir?', a: ['22', '28', '20', '16'], c: 0 },
+            { q: 'Hangi sayı asaldır?', a: ['9', '15', '21', '13'], c: 3 },
+            { q: 'Dikdörtgenin alanı nasıl bulunur?', a: ['2 x (a+b)', 'a x b', 'a + b', 'a / b'], c: 1 },
+            { q: 'En küçük sayma sayısı kaçtır?', a: ['0', '1', '10', '100'], c: 1 },
+            { q: '42 / 7 işleminin sonucu nedir?', a: ['5', '6', '7', '8'], c: 1 },
+            { q: 'Hangi sayı 5 ile kalansız bölünür?', a: ['42', '53', '65', '71'], c: 2 },
+            { q: '12 x 3 + 4 işleminin sonucu nedir?', a: ['40', '50', '36', '44'], c: 0 },
+            { q: 'Karenin kaç kenarı vardır?', a: ['3', '4', '5', '6'], c: 1 },
+            { q: '100 - 45 işleminin sonucu nedir?', a: ['55', '65', '45', '75'], c: 0 },
+            { q: '2 basamaklı en büyük sayı kaçtır?', a: ['10', '90', '99', '100'], c: 2 }
+        ],
+        2: [
+            { q: '12 x 12 işleminin sonucu nedir?', a: ['124', '144', '154', '164'], c: 1 },
+            { q: 'Hangi sayı 3 ile kalansız bölünür?', a: ['10', '11', '12', '13'], c: 2 }
+        ]
+    },
+    'Fen Bilimleri': {
+        1: [
+            { q: 'Güneş sistemindeki en büyük gezegen hangisidir?', a: ['Mars', 'Jüpiter', 'Satürn', 'Venüs'], c: 1 },
+            { q: 'Vücudumuzun temel yapı taşı nedir?', a: ['Doku', 'Organ', 'Hücre', 'Sistem'], c: 2 },
+            { q: 'Hangi kuvvet her zaman zıt yöndedir?', a: ['Yerçekimi', 'Kaldırma', 'Sürtünme', 'Manyetik'], c: 2 },
+            { q: 'Fotosentez yapan canlı hangisidir?', a: ['Kedi', 'Papatya', 'Aslan', 'Mantarlar'], c: 1 },
+            { q: 'Işık hangi hızla yayılır?', a: ['300.000 km/s', '100.000 km/s', '500.000 km/s', '1.000.000 km/s'], c: 0 },
+            { q: 'Hangisi bir karışımdır?', a: ['Saf su', 'Demir çivi', 'Şekerli su', 'Bakır tel'], c: 2 },
+            { q: 'Hangi organımız kanı pompalar?', a: ['Akciğer', 'Böbrek', 'Mide', 'Kalp'], c: 3 },
+            { q: 'Su kaç derecede kaynar?', a: ['50', '80', '100', '120'], c: 2 },
+            { q: 'Güneş hangi ışını yayar?', a: ['X-Ray', 'Morötesi', 'Gamma', 'Beta'], c: 1 },
+            { q: 'Isıyı en iyi ileten madde hangisidir?', a: ['Plastik', 'Tahta', 'Metal', 'Cam'], c: 2 }
+        ]
+    },
+    'Türkçe': {
+        1: [
+            { q: 'Hangisi bir isim tamlamasıdır?', a: ['Mavi ev', 'Kapı kolu', 'Güzel çocuk', 'Hızlı araba'], c: 1 },
+            { q: 'Hangisi zıt anlamlı kelime çiftidir?', a: ['Siyah-Kara', 'Ak-Beyaz', 'İyi-Kötü', 'Hızlı-Süratli'], c: 2 },
+            { q: 'Cümlenin sonuna hangi işaret konur?', a: ['Virgül', 'Nokta', 'Ünlem', 'Soru İşareti'], c: 1 },
+            { q: 'Hangisi bir yapım eki almıştır?', a: ['Kitaplar', 'Gözlük', 'Evden', 'Yolda'], c: 1 },
+            { q: 'Zamir nedir?', a: ['İsim yerine kullanılan kelime', 'Hareketi bildiren kelime', 'Niteleyici kelime', 'Bağlayıcı kelime'], c: 0 },
+            { q: 'Özne nedir?', a: ['İşi yapan kişi', 'İşten etkilenen', 'Zamanı bildiren', 'Yeri bildiren'], c: 0 },
+            { q: 'Hangisi bir devrik cümledir?', a: ['Dün geldim eve.', 'Eve dün geldim.', 'Geldim dün eve.', 'Dün eve geldim.'], c: 0 },
+            { q: 'Eş anlamlısı olan kelime hangisidir?', a: ['Hızlı', 'Elma', 'Kalem', 'Kitap'], c: 0 },
+            { q: 'Noktalı virgül nerede kullanılır?', a: ['Sıralı cümlelerde', 'Cümle sonunda', 'Bağlaçlardan önce', 'Soru sorarken'], c: 0 },
+            { q: 'Hangisi bir özel isimdir?', a: ['Şehir', 'Ankara', 'Dağ', 'Nehir'], c: 1 }
+        ]
+    },
+    'Sosyal Bilgiler': { 1: [
         { q: 'Hangisi bir temel haktır?', a: ['Eğitim', 'Araba sürmek', 'Sinemaya gitmek', 'Oyun oynamak'], c: 0 },
         { q: 'İlk Türk devletlerinde hükümdara ne denir?', a: ['Padişah', 'Sultan', 'Kağan', 'Kral'], c: 2 },
-        { q: 'Hangisi beşeri bir unsurdur?', a: ['Dağ', 'Göl', 'Köprü', 'Irmak'], c: 2 }
-    ],
-    'İngilizce': [
+        { q: 'Hangisi beşeri bir unsurdur?', a: ['Dağ', 'Göl', 'Köprü', 'Irmak'], c: 2 },
+        { q: 'Türkiye kaç coğrafi bölgeden oluşur?', a: ['5', '6', '7', '8'], c: 2 },
+        { q: 'Dünyanın en büyük okyanusu hangisidir?', a: ['Hint', 'Atlas', 'Pasifik', 'Arktik'], c: 2 },
+        { q: 'Erosiyonu önlemek için ne yapılmalıdır?', a: ['Ağaç dikilmelidir', 'Su barajları kurulmalıdır', 'Evler yapılmalıdır', 'Yollar inşa edilmelidir'], c: 0 },
+        { q: 'Atatürk ne zaman doğdu?', a: ['1881', '1923', '1938', '1919'], c: 0 },
+        { q: 'Paranın mucidi hangi medeniyettir?', a: ['Sümerler', 'Lidyalılar', 'Hititler', 'Mısırlılar'], c: 1 },
+        { q: 'Türkiye’nin başkenti neresidir?', a: ['İstanbul', 'İzmir', 'Ankara', 'Antalya'], c: 2 },
+        { q: 'Hangisi bir yer şeklidir?', a: ['Ada', 'Ev', 'Araba', 'Okul'], c: 0 }
+    ]},
+    'İngilizce': { 1: [
         { q: 'What is the opposite of "Hot"?', a: ['Cold', 'Warm', 'Big', 'Fast'], c: 0 },
         { q: 'Which color is a mix of Blue and Red?', a: ['Green', 'Purple', 'Orange', 'Yellow'], c: 1 },
-        { q: 'Monday is the ____ day of the week.', a: ['First', 'Second', 'Third', 'Fourth'], c: 0 }
-    ],
-    'Din Kültürü': [
+        { q: 'Monday is the ____ day of the week.', a: ['First', 'Second', 'Third', 'Fourth'], c: 0 },
+        { q: 'What is "Elma" in English?', a: ['Banana', 'Apple', 'Orange', 'Peach'], c: 1 },
+        { q: 'How many legs does a spider have?', a: ['4', '6', '8', '10'], c: 2 },
+        { q: 'What is the plural of "Child"?', a: ['Childs', 'Children', 'Childrens', 'Childes'], c: 1 },
+        { q: 'Which one is a fruit?', a: ['Cucumber', 'Potato', 'Apple', 'Onion'], c: 2 },
+        { q: 'What do you say in the morning?', a: ['Good night', 'Good evening', 'Good morning', 'Good afternoon'], c: 2 },
+        { q: 'What is "Kedi" in English?', a: ['Dog', 'Cat', 'Bird', 'Hamster'], c: 1 },
+        { q: 'Which number is "On"?', a: ['10', '20', '30', '40'], c: 0 }
+    ]},
+    'Din Kültürü': { 1: [
         { q: 'İslamın şartı kaçtır?', a: ['3', '4', '5', '6'], c: 2 },
         { q: 'İmanın şartı kaçtır?', a: ['5', '6', '7', '8'], c: 1 },
-        { q: 'Hangisi Peygamber Efendimizin ismidir?', a: ['Hz. Ali', 'Hz. Muhammed', 'Hz. Ömer', 'Hz. Osman'], c: 1 }
-    ]
+        { q: 'Hangisi Peygamber Efendimizin ismidir?', a: ['Hz. Ali', 'Hz. Muhammed', 'Hz. Ömer', 'Hz. Osman'], c: 1 },
+        { q: 'Kur’an-ı Kerim hangi dilde indirilmiştir?', a: ['Türkçe', 'İngilizce', 'Arapça', 'Farsça'], c: 2 },
+        { q: 'Günde kaç vakit namaz kılınır?', a: ['1', '3', '5', '7'], c: 2 },
+        { q: 'Oruç hangi ayda tutulur?', a: ['Ramazan', 'Şaban', 'Recep', 'Muharrem'], c: 0 },
+        { q: 'Hicret nedir?', a: ['Yürüyüş', 'Göç', 'Savaş', 'Barış'], c: 1 },
+        { q: 'Hangisi bir melektir?', a: ['Hz. Adem', 'Cebrail', 'Ebu Bekir', 'Hz. Yusuf'], c: 1 },
+        { q: 'Kabe nerededir?', a: ['Medine', 'Mekke', 'Kudüs', 'Bağdat'], c: 1 },
+        { q: 'Namazın farzları kaça ayrılır?', a: ['İçindekiler ve Dışındakiler', 'Erkekler ve Kadınlar', 'Büyükler ve Küçükler', 'Gündüz ve Gece'], c: 0 }
+    ]}
 };
 
 let currentQuizQuestions = [];
 let currentQuizIndex = 0;
 
 function openQuiz(subject) {
-    const questions = QUIZ_BANK[subject] || [];
-    if (questions.length === 0) { showToast('Bu ders için henüz test eklenmedi!'); return; }
-    currentQuizQuestions = [...questions].sort(() => 0.5 - Math.random()).slice(0, 3);
+    AudioEngine.init(); // Init audio engine on user interaction
+    const subXP = state.subjectXP[subject] || 0;
+    const currentLevel = Math.floor(subXP / 50) + 1;
+    
+    // Fallback to Level 1 if higher levels are missing
+    const levelData = QUIZ_BANK[subject][currentLevel] || QUIZ_BANK[subject][1];
+    
+    if (!levelData) { showToast('İçerik hazırlanıyor!'); return; }
+    
+    currentQuizQuestions = [...levelData].sort(() => 0.5 - Math.random()).slice(0, 10);
     currentQuizIndex = 0;
-    renderQuizQuestion(subject);
+    renderQuizQuestion(subject, currentLevel);
     document.getElementById('quiz-modal').classList.add('show');
 }
 
-function renderQuizQuestion(subject) {
+function renderQuizQuestion(subject, level) {
     const q = currentQuizQuestions[currentQuizIndex];
     const body = document.getElementById('quiz-body');
     body.innerHTML = `
-        <div style="text-align:center; margin-bottom:20px;"><span class="stat-label">${subject} - Soru ${currentQuizIndex + 1}/3</span></div>
+        <div style="text-align:center; margin-bottom:20px;">
+            <span class="stat-label">${subject} - Seviye ${level}</span>
+            <div style="font-size:0.7rem; font-weight:800; opacity:0.6; margin-top:4px;">SORU ${currentQuizIndex + 1} / 10</div>
+        </div>
         <h3 style="margin-bottom:1.5rem; line-height:1.4;">${q.q}</h3>
         <div style="display:grid; gap:12px;">
             ${q.a.map((ans, i) => `
@@ -391,28 +509,10 @@ function checkQuizAnswer(selected, correct, subject) {
     nextBtn.innerText = isLast ? 'Testi Bitir' : 'Sıradaki Soru';
     nextBtn.onclick = () => {
         if (isLast) closeQuiz();
-        else { currentQuizIndex++; renderQuizQuestion(subject); }
+        else { currentQuizIndex++; const subXP = state.subjectXP[subject] || 0; renderQuizQuestion(subject, Math.floor(subXP / 50) + 1); }
     };
     body.appendChild(nextBtn);
 }
-
-function closeQuiz() { 
-    document.getElementById('quiz-modal').classList.remove('show');
-    showToast('Test tamamlandı! Harikasın! 🌟');
-}
-
-function showToast(message) {
-    const existing = document.getElementById('toast-msg');
-    if (existing) existing.remove();
-    const toast = document.createElement('div');
-    toast.id = 'toast-msg';
-    toast.style.cssText = `position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #00d2ff, #9d50bb); color: white; padding: 12px 24px; border-radius: 20px; font-weight: 800; font-size: 0.95rem; z-index: 9999; box-shadow: 0 8px 25px rgba(0,0,0,0.4); animation: fadeIn 0.3s ease;`;
-    toast.innerText = message;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-}
-
-// --- Profile & Backup ---
 function updateUsername() {
     const input = document.getElementById('username-input');
     if (input.value) {
@@ -594,15 +694,35 @@ function renderFlashcards() {
 let timerInterval; let timeLeft = 25 * 60; let isTimerRunning = false;
 function toggleTimer() {
     const btn = document.getElementById('timer-btn');
-    if (isTimerRunning) { clearInterval(timerInterval); isTimerRunning = false; btn.innerText = 'Başlat'; }
+    if (isTimerRunning) { 
+        clearInterval(timerInterval); 
+        isTimerRunning = false; 
+        btn.innerText = 'Başlat'; 
+        showSessionRecap(Math.floor((25 * 60 - timeLeft) / 60)); // Partial recap
+    }
     else {
+        AudioEngine.init();
         isTimerRunning = true; btn.innerText = 'Durdur';
         timerInterval = setInterval(() => {
             timeLeft--; updateTimerDisplay();
-            if (timeLeft <= 0) { clearInterval(timerInterval); addXP(20); showToast('Odaklanma bitti! +20 XP'); resetTimer(); }
+            if (timeLeft <= 0) { 
+                clearInterval(timerInterval); 
+                addXP(25); // Bonus for completion
+                showSessionRecap(25);
+                resetTimer(); 
+            }
         }, 1000);
     }
 }
+
+function showSessionRecap(minutes) {
+    const xp = Math.floor(minutes * 0.8) + (minutes >= 25 ? 10 : 0);
+    const coins = Math.floor(xp / 2);
+    
+    // Using a toast for now to keep it premium and non-intrusive
+    showToast(`Odaklanma Tamam! 🧘 ${minutes} dk çalıştın. +${xp} XP ve +${coins} DP kazandın!`);
+}
+
 function updateTimerDisplay() {
     const m = Math.floor(timeLeft/60); const s = timeLeft%60;
     document.getElementById('time-display').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;

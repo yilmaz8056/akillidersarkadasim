@@ -122,34 +122,64 @@ main {
 .header-row { margin-bottom: 2rem; }
 .header-row h2 { font-size: 2.2rem; }
 
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+/* Dashboard Layout */
+.dashboard-grid { 
+    display: grid; 
+    grid-template-columns: 1fr 1.5fr; 
+    gap: 1.5rem; 
+    margin-bottom: 2rem; 
+}
+@media (max-width: 768px) {
+    .dashboard-grid { grid-template-columns: 1fr; }
+    .mini-stats-bar { overflow-x: auto; justify-content: flex-start; padding: 12px; }
+    .mini-stat { flex-shrink: 0; }
 }
 
 .stat-card {
-    background: var(--glass-bg);
-    backdrop-filter: blur(16px);
-    border: 1px solid var(--glass-border);
-    padding: 1.5rem;
-    border-radius: 20px;
+    background: var(--glass-bg); padding: 1.5rem; border-radius: 24px;
+    border: 1px solid var(--glass-border); backdrop-filter: blur(20px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3); transition: all 0.3s ease;
 }
+.stat-card:hover { transform: translateY(-5px); border-color: var(--accent-blue); }
 
 .stat-value { font-size: 1.8rem; font-weight: 800; margin: 10px 0; }
 .stat-label { font-size: 0.8rem; text-transform: uppercase; opacity: 0.7; }
 
-/* Themes */
+/* Compact Stats Bar */
+.mini-stats-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--glass-bg); backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border); border-radius: 20px;
+    padding: 12px 20px; margin-bottom: 1.5rem; gap: 10px;
+}
+.mini-stat { display: flex; align-items: center; gap: 10px; }
+.mini-stat i { font-size: 1.2rem; color: var(--accent-blue); opacity: 0.8; }
+.mini-stat-info { display: flex; flex-direction: column; }
+.mini-stat-info span { font-size: 1.1rem; font-weight: 800; line-height: 1; }
+.mini-stat-info small { font-size: 0.65rem; opacity: 0.6; text-transform: uppercase; font-weight: 700; margin-top: 2px; }
+
+/* Circular Goal Chart */
+.daily-goal-mini { width: 50px; height: 50px; position: relative; cursor: pointer; transition: transform 0.3s; }
+.daily-goal-mini:hover { transform: scale(1.1); }
+.daily-goal-mini span {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 0.65rem; font-weight: 900; color: var(--accent-gold);
+}
+.circular-chart { display: block; margin: 0 auto; max-width: 100%; max-height: 100%; }
+.circle-bg { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 3.8; }
+.circle { fill: none; stroke-width: 2.8; stroke-linecap: round; transition: stroke-dasharray 0.8s ease; }
+.circular-chart.gold .circle { stroke: var(--accent-gold); filter: drop-shadow(0 0 5px var(--accent-gold)); }
+
+/* Themes Refined */
 body.theme-purple {
-    --bg-dark: #1a0b2e;
-    --bg-gradient: linear-gradient(135deg, #1a0b2e 0%, #4a148c 50%, #311b92 100%);
-    --accent-blue: #e040fb; --accent-purple: #7c4dff;
+    --bg-dark: #1e1b4b;
+    --bg-gradient: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+    --accent-blue: #a78bfa; --accent-purple: #c084fc;
 }
 body.theme-gold {
-    --bg-dark: #1a1a1a;
-    --bg-gradient: linear-gradient(135deg, #1a1a1a 0%, #4a2c00 50%, #000000 100%);
-    --accent-blue: #ffd700; --accent-purple: #ff8c00;
+    --bg-dark: #18181b;
+    --bg-gradient: linear-gradient(135deg, #18181b 0%, #3f2b00 100%);
+    --accent-blue: #fbbf24; --accent-purple: #f59e0b;
 }
 .theme-switcher {
     display: flex;
