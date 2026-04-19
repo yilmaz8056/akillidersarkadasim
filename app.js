@@ -255,23 +255,46 @@ function addExam() {
 function renderExams() {
     const list = document.getElementById('exam-list');
     const widget = document.getElementById('exam-widget');
+    
     if (list) {
-        list.innerHTML = state.exams.map((ex, i) => `
-            <div class="exam-item">
-                <span><b>${ex.name}</b> - ${ex.date}</span>
-                <i class="fas fa-trash-alt" style="cursor:pointer" onclick="deleteExam(${i})"></i>
-            </div>
-        `).join('');
+        list.innerHTML = state.exams.length === 0
+            ? '<p style="opacity:0.5; font-size:0.85rem;">Henüz sınav eklenmedi.</p>'
+            : state.exams.map((ex, i) => `
+                <div class="exam-item">
+                    <span><b>${ex.name}</b> — ${ex.date}</span>
+                    <i class="fas fa-trash-alt" style="cursor:pointer; color:#f44336;" onclick="deleteExam(${i})"></i>
+                </div>
+            `).join('');
     }
     
-    if (widget && state.exams.length > 0) {
-        const next = state.exams.sort((a,b) => new Date(a.date) - new Date(b.date))[0];
-        const diff = Math.ceil((new Date(next.date) - new Date()) / (1000 * 60 * 60 * 24));
-        widget.innerHTML = `<div class="stat-card" style="margin-top:20px; border-left:4px solid #f44336">
-            <b>${next.name} Sınavına ${diff} gün kaldı! ✍️</b>
-        </div>`;
-    } else if (widget) {
-        widget.innerHTML = '';
+    if (widget) {
+        if (state.exams.length > 0) {
+            const sorted = [...state.exams].sort((a,b) => new Date(a.date) - new Date(b.date));
+            const next = sorted[0];
+            const diff = Math.ceil((new Date(next.date) - new Date()) / (1000 * 60 * 60 * 24));
+            const urgentColor = diff <= 7 ? '#ff4444' : diff <= 14 ? '#ff8800' : '#00d2ff';
+            widget.innerHTML = `
+                <div style="
+                    background: linear-gradient(135deg, ${urgentColor}22, ${urgentColor}11);
+                    border: 2px solid ${urgentColor};
+                    border-radius: 20px;
+                    padding: 1.2rem 1.5rem;
+                    margin-bottom: 1.5rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                ">
+                    <div style="font-size: 2.5rem; animation: pulse 1.5s ease infinite;">⏳</div>
+                    <div>
+                        <div style="font-size: 0.75rem; text-transform: uppercase; opacity: 0.7; font-weight: 700;">Yaklaşan Sınav</div>
+                        <div style="font-size: 1.1rem; font-weight: 800; margin: 4px 0;">${next.name}</div>
+                        <div style="font-size: 1.8rem; font-weight: 900; color: ${urgentColor};">${diff} GÜN KALDI</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            widget.innerHTML = '';
+        }
     }
 }
 
@@ -461,15 +484,41 @@ function setTheme(t) {
 }
 
 function toggleSound(type) {
-    // Logic from Phase 2
+    const btn = document.getElementById(`sound-${type}`);
+    const isActive = btn.classList.toggle('active');
+    // Here real audio logic would go, for now it's visual feedback
+    showToast(`${type === 'rain' ? 'Yağmur' : type === 'forest' ? 'Orman' : 'Lofi'} sesi ${isActive ? 'açıldı' : 'kapandı'}`);
 }
 
 function checkStreak() {
     const today = new Date().toLocaleDateString();
-    if (state.lastDate !== today) {
-        // Simple streak logic
-        state.lastDate = today;
-        localStorage.setItem('study_last_date', today);
+    const lastDate = state.lastDate;
+
+    if (lastDate && lastDate !== today) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        if (lastDate === yesterday.toLocaleDateString()) {
+            state.streak++;
+        } else {
+            state.streak = 1;
+        }
+    } else if (!lastDate) {
+        state.streak = 1;
+    }
+    
+    state.lastDate = today;
+    localStorage.setItem('study_last_date', today);
+    localStorage.setItem('study_streak', state.streak);
+
+    const badge = document.getElementById('streak-badge');
+    const count = document.getElementById('streak-count');
+    if (badge && count) {
+        count.innerText = state.streak;
+        if (state.streak > 0) {
+            badge.className = 'streak-visible';
+        } else {
+            badge.className = 'streak-hidden';
+        }
     }
 }
 

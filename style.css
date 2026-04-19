@@ -95,6 +95,8 @@ nav ul li.active {
     width: 45px; height: 45px; border-radius: 50%;
     background: linear-gradient(var(--accent-blue), var(--accent-purple));
 }
+.streak-hidden { display: none; }
+.streak-visible { display: inline-flex; align-items: center; gap: 4px; color: #ff9800; font-weight: 800; }
 
 /* Main Content Area */
 main {
@@ -149,8 +151,18 @@ body.theme-gold {
     --bg-gradient: linear-gradient(135deg, #1a1a1a 0%, #4a2c00 50%, #000000 100%);
     --accent-blue: #ffd700; --accent-purple: #ff8c00;
 }
-.theme-dot { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
-.theme-dot.active { border-color: white; transform: scale(1.2); }
+.theme-switcher {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.theme-dot {
+    width: 22px; height: 22px; border-radius: 50%;
+    cursor: pointer; border: 2px solid transparent;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+}
+.theme-dot.active { border-color: white; transform: scale(1.25); }
 .theme-default { background: #00d2ff; }
 .theme-purple { background: #e040fb; }
 .theme-gold { background: #ffd700; }
@@ -172,14 +184,56 @@ body.theme-gold {
 /* Timer Display */
 .timer-display { font-size: 8rem; font-weight: 800; text-align: center; margin: 2rem 0; text-shadow: 0 0 30px rgba(0,210,255,0.3); }
 
-/* --- PHASE 3 UI --- */
-.dashboard-grid-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
-.market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 1.5rem; }
-.market-item { background: var(--glass-bg); padding: 1.5rem 1rem; border-radius: 20px; border: 1px solid var(--glass-border); text-align: center; cursor: pointer; }
-.market-item.owned { border-color: #4caf50; }
-.item-price { color: #ffd700; font-weight: 800; margin-top: 10px; }
+.stat-card.purple { border-left: 4px solid var(--accent-purple); }
+.stat-card.gold { border-left: 4px solid #ffd700; }
 
-/* --- CORE COMPONENTS RESTORATION --- */
+/* Dashboard Extras Styles */
+.quest-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.quest-item {
+    display: flex; align-items: center; gap: 10px; padding: 10px;
+    background: rgba(255, 255, 255, 0.03); border-radius: 10px; font-size: 0.85rem;
+}
+.quest-item.completed { opacity: 0.6; text-decoration: line-through; border: 1px solid rgba(76, 175, 80, 0.3); }
+.quest-item i { color: var(--accent-blue); }
+.quest-item.completed i { color: #4caf50; }
+
+.svg-chart {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    height: 120px; padding: 10px 0; gap: 10px;
+}
+.chart-bar {
+    flex: 1; background: linear-gradient(to top, var(--accent-blue), var(--accent-purple));
+    border-radius: 4px 4px 0 0; position: relative; min-width: 15px;
+    transition: height 0.5s ease;
+}
+.chart-bar::after {
+    content: attr(data-day); position: absolute; bottom: -20px; left: 50%;
+    transform: translateX(-50%); font-size: 0.6rem; opacity: 0.6;
+}
+
+.badges-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 2rem; }
+
+/* Profile Page Layout */
+.profile-full-card {
+    display: flex; align-items: center; gap: 2rem; padding: 2.5rem !important;
+    margin-bottom: 2rem;
+}
+.avatar-large {
+    width: 100px; height: 100px; border-radius: 50%;
+    background: linear-gradient(var(--accent-blue), var(--accent-purple));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 3rem; border: 4px solid var(--glass-border);
+}
+.settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+
+/* Animation for urgent warnings */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Modal Restoration */
 .btn {
     padding: 12px 28px; border-radius: 12px; border: none; cursor: pointer;
     font-weight: 600; font-size: 0.95rem; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -279,6 +333,13 @@ body.theme-gold {
 }
 .sound-btn.active { background: var(--accent-blue); border-color: white; }
 
+/* --- PHASE 3 UI --- */
+.dashboard-grid-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+.market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 1.5rem; }
+.market-item { background: var(--glass-bg); padding: 1.5rem 1rem; border-radius: 20px; border: 1px solid var(--glass-border); text-align: center; cursor: pointer; }
+.market-item.owned { border-color: #4caf50; }
+.item-price { color: #ffd700; font-weight: 800; margin-top: 10px; }
+
 /* Mobile Floating Nav - THE FIX */
 .mobile-top-bar { display: none; }
 .desktop-only { display: block; }
@@ -287,7 +348,7 @@ body.theme-gold {
     .app-container { grid-template-columns: 1fr; grid-template-rows: auto 1fr; height: 100vh; overflow: hidden; }
     
     .mobile-top-bar {
-        display: flex; justify-content: space-between; align-items: center;
+        display: flex !important; justify-content: space-between; align-items: center;
         padding: 0.8rem 1.2rem; background: rgba(15, 12, 41, 0.4); backdrop-filter: blur(15px);
         border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 2500;
     }
@@ -312,7 +373,7 @@ body.theme-gold {
         border-right: none !important;
     }
 
-    .logo-section, .profile-card, .desktop-only { display: none; }
+    .logo-section, .profile-card, .desktop-only { display: none !important; }
 
     nav { width: 100%; }
     nav ul { 
@@ -335,7 +396,8 @@ body.theme-gold {
     main { padding: 0; height: 100%; overflow-y: auto; overflow-x: hidden; order: 2; }
     .section { padding: 1.5rem; padding-bottom: 120px; }
 
-    .dashboard-grid-layout, .stats-grid, .subject-grid { grid-template-columns: 1fr; }
+    .dashboard-grid-layout, .stats-grid, .subject-grid, .settings-grid { grid-template-columns: 1fr !important; }
+    .profile-full-card { flex-direction: column; text-align: center; gap: 1rem; }
     .subject-card { display: flex; flex-direction: column; align-items: center; padding: 1.5rem; }
     .subject-card .btn { width: 100%; margin-top: 15px; }
     .timer-display { font-size: 4rem; }
