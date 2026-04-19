@@ -140,6 +140,23 @@ function updateDailyGoalDisplay() {
     // Battle Pass Progress Gamification Visual
     const battlePassBar = document.getElementById('battle-pass-fill');
     if (battlePassBar) battlePassBar.style.width = `${percent}%`;
+
+    checkBadges();
+}
+
+// Gamified Badge Unlocker
+function checkBadges() {
+    const unlock = (id) => {
+        const b = document.getElementById(id);
+        if (b) b.classList.add('unlocked');
+    };
+    if (state.tasksCompleted >= 10) unlock('badge-mathgenius');
+    if (state.studyTime >= 120) unlock('badge-focusmaster');
+    const hour = new Date().getHours();
+    if (state.studyTime > 0) {
+        if (hour >= 21 || hour < 4) unlock('badge-nightowl');
+        if (hour >= 5 && hour <= 8) unlock('badge-earlybird');
+    }
 }
 
 function updateLevel() {
@@ -912,7 +929,42 @@ function showSessionRecap(minutes) {
     showToast(`Odaklanma Tamam! 🧘 ${minutes} dk çalıştın. +${xp} XP ve +${coins} DP kazandın!`);
 }
 
+// --- App Gamification Events (V7) ---
+let isSpinning = false;
+window.spinRoulette = function() {
+    if (isSpinning) return;
+    isSpinning = true;
+    const wheel = document.getElementById('roulette-wheel');
+    const span = wheel.querySelector('span');
+    span.innerText = '⏳';
+    
+    // Spin randomly between 3 to 6 full rotations + random angle
+    const degrees = Math.floor(Math.random() * 360) + 1440; 
+    wheel.style.transform = `rotate(${degrees}deg)`;
+    
+    setTimeout(() => {
+        const rewards = [{x: 50, n: '+50 XP'}, {x: 100, n: 'Efsane Cuma +100 XP'}, {x: 20, n: '+20 DP'}];
+        const r = rewards[Math.floor(Math.random() * rewards.length)];
+        span.innerText = '🎉';
+        
+        // Gamified reward
+        if (r.n.includes('DP')) {
+            state.coins += r.x;
+        } else {
+            addXP(r.x);
+        }
+        showToast(r.n + ' Kazandın!');
+        createSparkles(window.innerWidth/2, window.innerHeight/2);
+        
+        setTimeout(() => {
+            document.getElementById('daily-reward-modal').classList.remove('show');
+            isSpinning = false;
+        }, 2000);
+    }, 4000);
+}
+
 function claimDailyReward() {
+    // Fallback if not spinning
     state.coins += 50;
     localStorage.setItem('study_coins', state.coins);
     updateUI();

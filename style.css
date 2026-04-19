@@ -141,6 +141,22 @@ body.zen-mode .breathing-aura { display: block; }
 .sparkle { position: absolute; width: 8px; height: 8px; background: white; border-radius: 50%; pointer-events: none; animation: sparkleFade 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards; z-index: 9999; box-shadow: 0 0 10px white, 0 0 20px var(--accent-gold); }
 @keyframes sparkleFade { 0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; } 100% { transform: translateY(-80px) scale(0) rotate(180deg); opacity: 0; } }
 
+/* Şans Çarkı (Roulette Wheel) */
+.wheel-container { width: 250px; height: 250px; position: relative; margin: 0 auto 2rem; border-radius: 50%; border: 8px solid var(--accent-gold); box-shadow: 0 0 30px rgba(255, 215, 0, 0.4); overflow: hidden; background: repeating-conic-gradient(var(--accent-blue) 0% 12.5%, var(--accent-purple) 12.5% 25%); transition: transform 4s cubic-bezier(0.2, 0.8, 0.1, 1); }
+.wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 25px solid white; z-index: 10; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); }
+
+/* Animated Mascot Pets */
+.avatar-large.animated-pet { animation: floatingPet 3s infinite ease-in-out; position: relative; }
+.avatar-large.animated-pet::after { content: '✨'; position: absolute; bottom: 0; right: -5px; font-size: 1.5rem; animation: pulse 2s infinite; }
+@keyframes floatingPet { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px) scale(1.05); } }
+
+/* Efsanevi Rozetler (Legendary Badges) */
+.legendary-badges { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px; }
+.badge-item { background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); padding: 12px; border-radius: 12px; text-align: center; width: 100px; opacity: 0.5; filter: grayscale(1); transition: 0.4s; }
+.badge-item.unlocked { opacity: 1; filter: grayscale(0); border-color: var(--accent-gold); box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); transform: scale(1.05); }
+.badge-icon { font-size: 2.2rem; margin-bottom: 5px; }
+.badge-title { font-size: 0.7rem; font-weight: 800; color: var(--accent-gold); }
+
 /* Mobile Strict View */
 @media (max-width: 900px) {
     .app-container { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }

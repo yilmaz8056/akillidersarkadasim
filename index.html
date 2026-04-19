@@ -254,12 +254,26 @@
                     <h2>Profilin ve Ayarlar</h2>
                 </div>
                 <div class="profile-full-card stat-card">
-                    <div class="avatar-large" id="profile-avatar">👤</div>
+                    <div class="avatar-large animated-pet" id="profile-avatar">👤</div>
                     <div class="profile-details">
                         <input type="text" id="username-input" class="input-glass" placeholder="Adını Değiştir">
                         <button class="btn btn-primary" onclick="updateUsername()">Kaydet</button>
                     </div>
                 </div>
+                
+                <!-- Start V7 Legendary Badges -->
+                <div class="stat-card" style="margin-bottom: 2rem;">
+                    <h3><i class="fas fa-medal" style="color:var(--accent-gold);"></i> Efsanevi Rozetler Vitrini</h3>
+                    <p style="font-size:0.8rem; opacity:0.7;">Başarılarınla aydınlat!</p>
+                    <div class="legendary-badges" id="legendary-badges-container">
+                        <div class="badge-item" id="badge-nightowl"><div class="badge-icon">🦉</div><div class="badge-title">GECE KUŞU</div></div>
+                        <div class="badge-item" id="badge-mathgenius"><div class="badge-icon">🧮</div><div class="badge-title">TEST DEHASI</div></div>
+                        <div class="badge-item" id="badge-focusmaster"><div class="badge-icon">🧘‍♂️</div><div class="badge-title">ODAK USTASI</div></div>
+                        <div class="badge-item" id="badge-earlybird"><div class="badge-icon">🌅</div><div class="badge-title">ERKENCİ KUŞ</div></div>
+                    </div>
+                </div>
+                <!-- End V7 Badges -->
+
                 <div class="settings-grid">
                     <!-- New: Focus Analytics -->
                     <div class="stat-card" style="grid-column: 1 / -1;">
@@ -334,16 +348,20 @@
         </div>
     </div>
 
-    <!-- New: Daily Reward Modal -->
+    <!-- New V7: Daily Reward & Roulette Modal -->
     <div id="daily-reward-modal" class="modal">
-        <div class="modal-content" style="text-align:center; padding:3rem;">
-            <div style="font-size:4rem; margin-bottom:1rem; animation: buddyFloat 2s infinite ease-in-out;">🎁</div>
-            <h2 style="color:var(--accent-gold); font-size:2rem; margin-bottom:10px;">Günlük Hediyen!</h2>
-            <p style="opacity:0.8; margin-bottom:20px;">Öğrenmeye ara vermediğin için teşekkürler.</p>
-            <div class="coin-display" style="font-size:2rem; font-weight:800; background:rgba(255,215,0,0.1); display:inline-block; padding:10px 20px; border-radius:15px; border:1px solid var(--accent-gold);">
-                +50 <i class="fas fa-coins" style="color:var(--accent-gold);"></i>
+        <div class="modal-content" style="text-align:center; padding:2rem;">
+            <h2 style="color:var(--accent-gold); font-size:2rem; margin-bottom:10px;">Şans Çarkı! 🎡</h2>
+            <p style="opacity:0.8; margin-bottom:20px;">Öğrenmeye ara vermediğin için hakkın var. Çevir ve kazan!</p>
+            
+            <div style="position: relative; margin: 2rem auto;">
+                <div class="wheel-pointer"></div>
+                <div class="wheel-container" id="roulette-wheel" style="display:flex; align-items:center; justify-content:center; flex-direction:column;">
+                    <span style="font-size:2rem; font-weight:900; -webkit-text-stroke: 1px black;">?</span>
+                </div>
             </div>
-            <button class="btn btn-primary" style="margin-top:2rem; width:100%; padding:15px;" onclick="claimDailyReward()">Topla ve Başla 🚀</button>
+
+            <button class="btn btn-primary" id="spin-btn" style="width:100%; padding:15px; font-size:1.1rem; background:linear-gradient(135deg, #ff8c00, #ff0080);" onclick="spinRoulette()">Çarkı Çevir 🚀</button>
         </div>
     </div>
 

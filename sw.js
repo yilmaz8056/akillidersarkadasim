@@ -31,9 +31,10 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Skip caching for external audio streams to prevent buffering issues
-  if (event.request.url.includes('soundjay.com') || event.request.url.includes('stream')) {
-    return;
+  // Ultra-bypass for Audio to destroy local CORS Null errors.
+  const url = event.request.url;
+  if (url.includes('.ogg') || url.includes('.mp3') || url.includes('actions.google.com') || url.includes('soundjay.com')) {
+    return; // Let the browser handle standard audio fetch natively.
   }
   event.respondWith(
     caches.match(event.request)
