@@ -146,8 +146,18 @@ body.zen-mode .breathing-aura { display: block; }
 @keyframes sparkleFade { 0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; } 100% { transform: translateY(-80px) scale(0) rotate(180deg); opacity: 0; } }
 
 /* Şans Çarkı (Roulette Wheel) */
-.wheel-container { width: 250px; height: 250px; position: relative; margin: 0 auto 2rem; border-radius: 50%; border: 8px solid var(--accent-gold); box-shadow: 0 0 30px rgba(255, 215, 0, 0.4); overflow: hidden; background: repeating-conic-gradient(var(--accent-blue) 0% 12.5%, var(--accent-purple) 12.5% 25%); transition: transform 4s cubic-bezier(0.2, 0.8, 0.1, 1); }
+.wheel-container { width: 250px; height: 250px; position: relative; margin: 0 auto 2rem; border-radius: 50%; border: 8px solid var(--accent-gold); box-shadow: 0 0 30px rgba(255, 215, 0, 0.4); overflow: hidden; background: repeating-conic-gradient(var(--accent-blue) 0% 12.5%, var(--accent-purple) 12.5% 25%, var(--accent-blue) 25% 37.5%, var(--accent-purple) 37.5% 50%, var(--accent-blue) 50% 62.5%, var(--accent-purple) 62.5% 75%, var(--accent-blue) 75% 87.5%, var(--accent-purple) 87.5% 100%); transition: transform 4s cubic-bezier(0.2, 0.8, 0.1, 1); }
+.wheel-text { position: absolute; top: 0; left: 50%; height: 50%; transform-origin: bottom center; padding-top: 20px; font-weight: 900; font-size: 0.75rem; color: white; -webkit-text-stroke: 0.5px black; display: flex; justify-content: center; width: 40px; margin-left: -20px; }
 .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 25px solid white; z-index: 10; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); }
+
+/* V10: Library Cards */
+.library-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 15px; padding: 15px; position: relative; overflow: hidden; }
+.library-card h4 { color: var(--accent-gold); margin-bottom: 5px; }
+.library-card p { font-size: 0.8rem; line-height: 1.4; opacity: 0.9; }
+
+/* Battle Pass Rewards */
+.chest-ready { animation: shake 0.5s infinite; cursor: pointer; filter: drop-shadow(0 0 10px gold); }
+@keyframes shake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-5deg); } 75% { transform: rotate(5deg); } }
 
 /* Animated Mascot Pets */
 .avatar-large.animated-pet { animation: floatingPet 3s infinite ease-in-out; position: relative; }
