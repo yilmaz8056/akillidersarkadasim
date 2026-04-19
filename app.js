@@ -20,11 +20,24 @@ let state = {
     subjectXP: JSON.parse(localStorage.getItem('study_sub_xp')) || {
         'Matematik': 0, 'Fen Bilimleri': 0, 'Türkçe': 0, 'Sosyal Bilgiler': 0, 'İngilizce': 0, 'Din Kültürü': 0
     },
-    level: parseInt(localStorage.getItem('study_level')) || 1
+    level: parseInt(localStorage.getItem('study_level')) || 1,
+    dailyXP: JSON.parse(localStorage.getItem('study_daily_xp')) || { date: "", amount: 0 }
 };
 
 // --- Initialization ---
 window.onload = () => {
+    // Sync Daily XP
+    const today = new Date().toLocaleDateString();
+    if (!state.dailyXP || state.dailyXP.date !== today) {
+        state.dailyXP = { date: today, amount: 0 };
+        localStorage.setItem('study_daily_xp', JSON.stringify(state.dailyXP));
+    }
+    
+    // Safeguard Market Inventory
+    if (!Array.isArray(state.inventory)) {
+        state.inventory = ['👤'];
+        localStorage.setItem('study_inventory', JSON.stringify(state.inventory));
+    }
     // PWA Service Worker Registration
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js')
@@ -184,8 +197,9 @@ function renderSubjectCards() {
         const xp = state.subjectXP[sub] || 0;
         const lv = Math.floor(xp / 50) + 1;
         const progress = Math.min((xp % 50) * 2, 100);
+        const nearMastery = progress >= 80 ? 'mastery-pulse' : '';
         return `
-            <div class="subject-card">
+            <div class="subject-card ${nearMastery}">
                 <div data-timer-subject="${sub}" style="cursor:pointer; width:100%;">
                     <span class="subject-icon">${SUBJECT_ICONS[sub]}</span>
                     <h3>${sub}</h3>
@@ -335,21 +349,32 @@ function deleteExam(index) {
 // --- Audio & Sound Engine ---
 const AudioEngine = {
     initialized: false,
+    sources: {
+        rain: 'https://upload.wikimedia.org/wikipedia/commons/b/b5/Rain_on_tin_roof.mp3',
+        forest: 'https://upload.wikimedia.org/wikipedia/commons/0/0d/Bird_Singing_in_the_Forest_%28Spring%2C_Poland%29.mp3',
+        lofi: 'https://upload.wikimedia.org/wikipedia/commons/2/23/Gymnop%C3%A9die_No._1.mp3'
+    },
     init() {
         if (this.initialized) return;
         ['rain', 'forest', 'lofi'].forEach(t => {
             const audio = document.getElementById(`audio-${t}`);
-            if (audio) { audio.volume = 0.5; audio.play().then(() => audio.pause()).catch(() => {}); }
+            if (audio) { 
+                audio.src = this.sources[t];
+                audio.load();
+                audio.volume = 0.5;
+            }
         });
         this.initialized = true;
     }
 };
 
 function toggleSound(type) {
-    AudioEngine.init(); // Initialize on click
+    AudioEngine.init(); 
     const btn = document.getElementById(`sound-${type}`);
     const audio = document.getElementById(`audio-${type}`);
     
+    if (!audio) return;
+
     ['rain', 'forest', 'lofi'].forEach(t => {
         if (t !== type) {
             const b = document.getElementById(`sound-${t}`);
@@ -361,7 +386,11 @@ function toggleSound(type) {
 
     if (btn.classList.toggle('active')) {
         audio.currentTime = 0;
-        audio.play().catch(() => showToast('Ses başlatılamadı.'));
+        audio.play().catch(e => {
+            console.error('Audio play error:', e);
+            showToast('Ses yüklenemedi. Lütfen internet bağlantınızı kontrol edin.');
+            btn.classList.remove('active');
+        });
         showToast(`${type.toUpperCase()} sesi açıldı. 🎵`);
     } else {
         audio.pause();
@@ -494,6 +523,7 @@ function renderQuizQuestion(subject, level) {
     `;
 }
 
+let correctAnswersCount = 0;
 function checkQuizAnswer(selected, correct, subject) {
     const buttons = document.querySelectorAll('.quiz-ans-btn');
     buttons.forEach((btn, i) => {
@@ -501,17 +531,41 @@ function checkQuizAnswer(selected, correct, subject) {
         if (i === correct) btn.style.borderColor = '#4caf50';
         if (i === selected && i !== correct) btn.style.borderColor = '#f44336';
     });
-    if (selected === correct) addXP(10, subject);
+    
+    if (selected === correct) {
+        correctAnswersCount++;
+        addXP(10, subject);
+    }
+    
     const body = document.getElementById('quiz-body');
     const isLast = currentQuizIndex === currentQuizQuestions.length - 1;
     const nextBtn = document.createElement('button');
     nextBtn.className = 'btn btn-primary'; nextBtn.style.marginTop = '20px'; nextBtn.style.width = '100%';
-    nextBtn.innerText = isLast ? 'Testi Bitir' : 'Sıradaki Soru';
+    nextBtn.innerText = isLast ? 'Sonucu Gör' : 'Sıradaki Soru';
     nextBtn.onclick = () => {
-        if (isLast) closeQuiz();
-        else { currentQuizIndex++; const subXP = state.subjectXP[subject] || 0; renderQuizQuestion(subject, Math.floor(subXP / 50) + 1); }
+        if (isLast) showQuizResults();
+        else { 
+            currentQuizIndex++; 
+            const subXP = state.subjectXP[subject] || 0; 
+            renderQuizQuestion(subject, Math.floor(subXP / 50) + 1); 
+        }
     };
     body.appendChild(nextBtn);
+}
+
+function showQuizResults() {
+    const stars = correctAnswersCount >= 9 ? '⭐⭐⭐' : correctAnswersCount >= 6 ? '⭐⭐' : '⭐';
+    const body = document.getElementById('quiz-body');
+    body.innerHTML = `
+        <div style="text-align:center; padding: 20px 0;">
+            <div style="font-size:3.5rem; margin-bottom:1rem; animation: pulse 1s infinite alternate;">🏆</div>
+            <h2 style="color:var(--accent-gold);">Test Tamamlandı!</h2>
+            <div class="star-rating">${stars}</div>
+            <p>10 soruda <b>${correctAnswersCount}</b> doğru yaptın.</p>
+            <p style="opacity:0.7; font-size:0.8rem; margin-top:10px;">+${correctAnswersCount * 10} XP ve DP kazandın!</p>
+            <button class="btn btn-primary" style="width:100%; margin-top:25px; padding:15px;" onclick="closeQuiz()">Harika! Devam Et</button>
+        </div>
+    `;
 }
 function updateUsername() {
     const input = document.getElementById('username-input');
@@ -698,16 +752,19 @@ function toggleTimer() {
         clearInterval(timerInterval); 
         isTimerRunning = false; 
         btn.innerText = 'Başlat'; 
+        document.body.classList.remove('zen-mode'); // Exit Zen Mode
         showSessionRecap(Math.floor((25 * 60 - timeLeft) / 60)); // Partial recap
     }
     else {
         AudioEngine.init();
-        isTimerRunning = true; btn.innerText = 'Durdur';
+        isTimerRunning = true; 
+        btn.innerText = 'Durdur';
+        document.body.classList.add('zen-mode'); // Enter Zen Mode
         timerInterval = setInterval(() => {
             timeLeft--; updateTimerDisplay();
             if (timeLeft <= 0) { 
                 clearInterval(timerInterval); 
-                addXP(25); // Bonus for completion
+                addXP(25); 
                 showSessionRecap(25);
                 resetTimer(); 
             }
@@ -721,6 +778,21 @@ function showSessionRecap(minutes) {
     
     // Using a toast for now to keep it premium and non-intrusive
     showToast(`Odaklanma Tamam! 🧘 ${minutes} dk çalıştın. +${xp} XP ve +${coins} DP kazandın!`);
+}
+
+function closeQuiz() { 
+    document.getElementById('quiz-modal').classList.remove('show');
+}
+
+function showToast(message) {
+    const existing = document.getElementById('toast-msg');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.id = 'toast-msg';
+    toast.style.cssText = `position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); color: white; padding: 12px 24px; border-radius: 20px; font-weight: 800; font-size: 0.9rem; z-index: 10000; box-shadow: 0 8px 30px rgba(0,0,0,0.5); animation: fadeIn 0.3s ease;`;
+    toast.innerText = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
 }
 
 function updateTimerDisplay() {
