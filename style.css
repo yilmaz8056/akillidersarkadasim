@@ -161,7 +161,19 @@ body.zen-mode .breathing-aura { display: block; }
 .badge-icon { font-size: 2.2rem; margin-bottom: 5px; }
 .badge-title { font-size: 0.7rem; font-weight: 800; color: var(--accent-gold); }
 
-/* Mobile Strict View */
+/* V9: Assignment & Riddle UI */
+.assignment-item { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--glass-border); transition: 0.3s; margin-bottom: 8px; }
+.assignment-item:hover { background: rgba(255,255,255,0.1); transform: translateX(5px); }
+.assign-tag { font-size: 0.7rem; padding: 3px 8px; border-radius: 6px; font-weight: 700; text-transform: uppercase; }
+
+/* Breathing Circle Animation (Enhanced V9) */
+.breathing-aura { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 700px; height: 700px; border-radius: 50%; background: radial-gradient(circle, var(--zen-glow) 0%, rgba(157, 80, 187, 0.1) 40%, transparent 75%); z-index: -1; animation: breatheBase 10s infinite ease-in-out; display: none; pointer-events: none; filter: blur(40px); }
+body.zen-mode .breathing-aura { display: block; }
+
+@keyframes breatheBase {
+    0%, 100% { transform: translate(-50%, -50%) scale(0.5); opacity: 0.1; }
+    50% { transform: translate(-50%, -50%) scale(2.0); opacity: 0.8; }
+}
 @media (max-width: 900px) {
     .app-container { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
     .mobile-top-bar { display: flex !important; justify-content: space-between; align-items: center; padding: 0.8rem 1.2rem; background: rgba(15, 12, 41, 0.85); backdrop-filter: blur(15px); border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 2500; }

@@ -23,8 +23,19 @@ let state = {
     level: parseInt(localStorage.getItem('study_level')) || 1,
     dailyXP: JSON.parse(localStorage.getItem('study_daily_xp')) || { date: "", amount: 0 },
     theme: localStorage.getItem('study_theme') || 'default',
-    weeklyFocus: JSON.parse(localStorage.getItem('study_weekly_focus')) || [0, 0, 0, 0, 0, 0, 0]
+    weeklyFocus: JSON.parse(localStorage.getItem('study_weekly_focus')) || [0, 0, 0, 0, 0, 0, 0],
+    
+    // V9 Fields
+    assignments: JSON.parse(localStorage.getItem('study_assignments')) || [],
+    lastRiddleDate: localStorage.getItem('study_riddle_date') || ""
 };
+
+const RIDDLES = [
+    { q: "Sıra sıra odalar, birbirini kovalar. (Cevap: Tren)", a: "tren" },
+    { q: "Şehirleri var ama evleri yok. Dağları var ama ağaçları yok. (Cevap: Harita)", a: "harita" },
+    { q: "Geceleri fener, gündüzleri söner. (Cevap: Yıldız)", a: "yıldız" },
+    { q: "Ben giderim o gider, arkamdam tık tık eder. (Cevap: Baston)", a: "baston" }
+];
 
 const DAILY_TIPS = [
     "Su içmeyi unutma! Beynin su içtikçe daha iyi odaklanır. 💧",
@@ -88,6 +99,8 @@ window.onload = () => {
     renderExams();
     renderMarket();
     renderLeaderboard();
+    renderAssignments();
+    renderRiddle();
     updateDailyGoalDisplay();
     showSection('dashboard');
 };
@@ -434,97 +447,125 @@ function deleteExam(index) {
     renderExams();
 }
 
-// --- V8 Absolute Offline Audio Synthesizer (0% Network) ---
+// --- V9 Assignment & Riddle Logic ---
+function openAssignmentModal() { document.getElementById('assignment-modal').classList.add('show'); }
+function closeAssignmentModal() { document.getElementById('assignment-modal').classList.remove('show'); }
+
+function addAssignment() {
+    const name = document.getElementById('assign-name').value;
+    const subject = document.getElementById('assign-subject').value;
+    const level = parseInt(document.getElementById('assign-level').value);
+    
+    if (!name) return showToast("Ödev adını girermisin? 🤖");
+    
+    const xpMap = { 1: 10, 2: 25, 3: 50 };
+    const xpReward = xpMap[level];
+    
+    state.assignments.push({ id: Date.now(), name, subject, level, xp: xpReward });
+    saveAssignments();
+    renderAssignments();
+    closeAssignmentModal();
+    showToast("Ödev Robota eklendi! 🚀");
+}
+
+function deleteAssignment(id, earnedXP = 0) {
+    state.assignments = state.assignments.filter(a => a.id !== id);
+    if (earnedXP > 0) {
+        addXP(earnedXP);
+        showToast(`Ödev Tamamlandı! +${earnedXP} XP Kazandın! 🏆`);
+    }
+    saveAssignments();
+    renderAssignments();
+}
+
+function saveAssignments() { localStorage.setItem('study_assignments', JSON.stringify(state.assignments)); }
+
+function renderAssignments() {
+    const list = document.getElementById('assignment-list');
+    if (!list) return;
+    
+    if (state.assignments.length === 0) {
+        list.innerHTML = '<p style="opacity:0.5; font-size:0.85rem; text-align:center;">Henüz ödev eklemedin. 🤖</p>';
+        return;
+    }
+    
+    list.innerHTML = state.assignments.map(a => `
+        <div class="assignment-item">
+            <div>
+                <div style="font-weight:700;">${a.name}</div>
+                <div style="font-size:0.7rem; opacity:0.7;">${a.subject}</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span class="assign-tag" style="background:${a.level === 3 ? '#ff4444' : a.level === 2 ? '#ff8c00' : '#4caf50'};">${a.xp} XP</span>
+                <i class="fas fa-check-circle" style="color:var(--accent-blue); font-size:1.5rem; cursor:pointer;" onclick="deleteAssignment(${a.id}, ${a.xp})"></i>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderRiddle() {
+    const today = new Date().toDateString();
+    const riddleEl = document.getElementById('riddle-question');
+    const inputGroup = document.getElementById('riddle-input-group');
+    
+    if (state.lastRiddleDate === today) {
+        riddleEl.innerText = "Harika! Bugünün bilmecesini çözdün. Yarın yeni bir tanesi gelecek! 🌟";
+        inputGroup.style.display = 'none';
+        return;
+    }
+    
+    // Use day of month to pick stable riddle
+    const day = new Date().getDate();
+    const riddle = RIDDLES[day % RIDDLES.length];
+    riddleEl.innerText = riddle.q;
+    riddleEl.dataset.answer = riddle.a;
+}
+
+function checkRiddle() {
+    const userInput = document.getElementById('riddle-answer').value.toLowerCase().trim();
+    const riddleEl = document.getElementById('riddle-question');
+    const correctAnswer = riddleEl.dataset.answer;
+    
+    if (userInput === correctAnswer) {
+        addXP(10);
+        state.lastRiddleDate = new Date().toDateString();
+        localStorage.setItem('study_riddle_date', state.lastRiddleDate);
+        renderRiddle();
+        showToast("Doğru! +10 XP Kazandın! 🎉");
+    } else {
+        showToast("Üzgünüm, robot bu cevabı beğenmedi. Tekrar dene! 🤖");
+    }
+}
+
+// --- V9 Final Absolute Offline Audio Engine ---
 const AudioEngine = {
     audioCtx: null,
     activeNodes: [],
-    
-    initContext() {
-        if (!this.audioCtx) {
-            this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-    },
-    
+    initContext() { if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)(); },
     play(type) {
         this.initContext();
-        // Force unpause in mobile/strict browsers
-        if (this.audioCtx.state === 'suspended') {
-            this.audioCtx.resume();
-        }
+        if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
         this.pauseAll();
+        const gainNode = this.audioCtx.createGain(); gainNode.gain.value = 0.5;
+        gainNode.connect(this.audioCtx.destination); this.activeNodes.push(gainNode);
         
-        const gainNode = this.audioCtx.createGain();
-        gainNode.gain.value = 0.8; // High volume to ensure audible feedback
-        gainNode.connect(this.audioCtx.destination);
-        this.activeNodes.push(gainNode);
-
-        if (type === 'rain') {
-            // Heavy Rain / Pink Noise Simulator
-            const bufferSize = this.audioCtx.sampleRate * 2;
-            const buffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
-            const data = buffer.getChannelData(0);
-            for (let i = 0; i<bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.8; // Boost noise amplitude
-            
-            const noise = this.audioCtx.createBufferSource();
-            noise.buffer = buffer; noise.loop = true;
-            
-            const filter = this.audioCtx.createBiquadFilter();
-            filter.type = 'lowpass'; filter.frequency.value = 600; // Bright rain
-            
-            noise.connect(filter); filter.connect(gainNode);
-            noise.start(); this.activeNodes.push(noise);
-            
-        } else if (type === 'forest') {
-            // Bright Wind/Birds frequency band
-            const bufferSize = this.audioCtx.sampleRate * 2;
-            const buffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
-            const data = buffer.getChannelData(0);
-            for (let i = 0; i<bufferSize; i++) data[i] = Math.random() * 2 - 1;
-            
-            const noise = this.audioCtx.createBufferSource();
-            noise.buffer = buffer; noise.loop = true;
-            
-            const filter = this.audioCtx.createBiquadFilter();
-            filter.type = 'bandpass'; filter.frequency.value = 1500;
-            
-            noise.connect(filter); filter.connect(gainNode);
-            noise.start(); this.activeNodes.push(noise);
-            gainNode.gain.value = 0.6;
-            
-        } else if (type === 'lofi') {
-            // 8-Bit LoFi Chords (C Major 7) for studying
-            const freqs = [261.63, 329.63, 392.00, 493.88];
-            freqs.forEach(f => {
-                const osc = this.audioCtx.createOscillator();
-                osc.type = 'triangle'; // Warmer retro sound
-                osc.frequency.value = f;
-                
-                // Slight detune for retro feel
-                osc.detune.value = Math.random() * 10 - 5;
-                
-                const oscGain = this.audioCtx.createGain();
-                oscGain.gain.value = 0.25;
-                
-                // LFO for volume wobble (Lo-fi tape effect)
-                const lfo = this.audioCtx.createOscillator();
-                lfo.type = 'sine'; lfo.frequency.value = 0.5;
-                const lfoGain = this.audioCtx.createGain();
-                lfoGain.gain.value = 0.1;
-                lfo.connect(lfoGain); lfoGain.connect(oscGain.gain);
-                
-                osc.connect(oscGain); oscGain.connect(gainNode);
-                osc.start(); lfo.start();
-                this.activeNodes.push(osc, lfo);
-            });
-            gainNode.gain.value = 0.3;
-        }
+        // Procedural White/Pink Noise (No files needed, CORS proof)
+        const bufferSize = this.audioCtx.sampleRate * 2;
+        const buffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i<bufferSize; i++) data[i] = Math.random() * 2 - 1;
+        const noise = this.audioCtx.createBufferSource(); noise.buffer = buffer; noise.loop = true;
+        const filter = this.audioCtx.createBiquadFilter();
+        
+        if (type === 'rain') { filter.type = 'lowpass'; filter.frequency.value = 500; }
+        else if (type === 'forest') { filter.type = 'bandpass'; filter.frequency.value = 1000; }
+        else { filter.type = 'lowpass'; filter.frequency.value = 300; gainNode.gain.value = 0.2; }
+        
+        noise.connect(filter); filter.connect(gainNode);
+        noise.start(); this.activeNodes.push(noise);
     },
-    
     pauseAll() {
-        this.activeNodes.forEach(node => {
-            if (node.stop) { try { node.stop(); } catch(e){} }
-            if (node.disconnect) node.disconnect();
-        });
+        this.activeNodes.forEach(node => { if (node.stop) try { node.stop(); } catch(e){} if (node.disconnect) node.disconnect(); });
         this.activeNodes = [];
     }
 };

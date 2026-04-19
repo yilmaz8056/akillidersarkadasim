@@ -9,12 +9,18 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script>
+        // CRITICAL V9: Force unregister Service Workers to bypass persistent ghost caches
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(function(registrations) {
                 for(let registration of registrations) {
                     registration.unregister();
-                    console.log('SW Unregistered to clear cache overlay');
                 }
+            });
+        }
+        // Force Clear Cache for local development protocols
+        if (window.caches) {
+            caches.keys().then(function(names) {
+                for (let name of names) caches.delete(name);
             });
         }
     </script>
@@ -124,6 +130,30 @@
                     <div>
                         <h4 style="margin:0; font-size:1.1rem; color:white;">Günün Tavsiyesi</h4>
                         <p style="margin:0; font-size:0.9rem; opacity:0.9; color:white;" id="daily-tip-text">Su içmeyi unutma! Beynin su içtikçe daha iyi odaklanır.</p>
+                    </div>
+                </div>
+
+                <!-- V9 New: Günün Bilmecesi -->
+                <div class="stat-card" style="background: linear-gradient(135deg, #1a0b2e, #4a154b); border: 2px dashed var(--accent-purple); margin-bottom: 20px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3 style="margin:0;"><i class="fas fa-brain"></i> Günün Bilmecesi</h3>
+                        <span class="badge" style="background:var(--accent-purple);">+10 XP</span>
+                    </div>
+                    <p style="margin:15px 0; font-style:italic;" id="riddle-question">Yükleniyor...</p>
+                    <div id="riddle-input-group" style="display:flex; gap:10px;">
+                        <input type="text" id="riddle-answer" class="input-glass" style="flex:1;" placeholder="Cevabın?">
+                        <button class="btn btn-primary" onclick="checkRiddle()" style="padding:10px 20px;">Cevapla</button>
+                    </div>
+                </div>
+
+                <!-- V9 New: Ödev Takip Robotu -->
+                <div class="stat-card" style="margin-bottom: 20px; border-left: 5px solid var(--accent-blue);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <h3 style="margin:0;"><i class="fas fa-robot"></i> Ödev Takip Robotu</h3>
+                        <button class="btn btn-outline" style="padding:5px 12px; font-size:0.8rem;" onclick="openAssignmentModal()">+ Ödev Ekle</button>
+                    </div>
+                    <div id="assignment-list" style="display:flex; flex-direction:column; gap:10px;">
+                        <p style="opacity:0.5; font-size:0.85rem; text-align:center;">Henüz ödev eklenmedi. Robotun bekliyor! 🤖</p>
                     </div>
                 </div>
 
@@ -358,6 +388,29 @@
             </div>
 
             <button class="btn btn-primary" id="spin-btn" style="width:100%; padding:15px; font-size:1.1rem; background:linear-gradient(135deg, #ff8c00, #ff0080);" onclick="spinRoulette()">Çarkı Çevir 🚀</button>
+        </div>
+    </div>
+
+    <!-- V9 New: Assignment Modal -->
+    <div id="assignment-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAssignmentModal()">&times;</span>
+            <h2 style="margin-bottom:20px;"><i class="fas fa-robot"></i> Yeni Ödev Ekle</h2>
+            <div style="display:flex; flex-direction:column; gap:15px;">
+                <input type="text" id="assign-name" class="input-glass" placeholder="Ödevin Adı (Örn: Matematik Sayfa 20)">
+                <select id="assign-subject" class="input-glass">
+                    <option value="Matematik">Matematik</option>
+                    <option value="Türkçe">Türkçe</option>
+                    <option value="Fen Bilimleri">Fen Bilimleri</option>
+                    <option value="Sosyal Bilgiler">Sosyal Bilgiler</option>
+                </select>
+                <select id="assign-level" class="input-glass">
+                    <option value="1">Kolay (+10 XP)</option>
+                    <option value="2" selected>Orta (+25 XP)</option>
+                    <option value="3">Zor (+50 XP)</option>
+                </select>
+                <button class="btn btn-primary" style="margin-top:10px;" onclick="addAssignment()">Robota Gönder 🚀</button>
+            </div>
         </div>
     </div>
 
