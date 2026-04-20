@@ -628,73 +628,62 @@ function checkRiddle() {
     }
 }
 
-// --- V12 Ultra-Resilient Audio Engine (Procedural) ---
+// --- V14 Ultimate Audio Engine (YouTube IFrame API) ---
+let ytPlayer;
+
+// Initialize when YouTube API is ready
+window.onYouTubeIframeAPIReady = function() {
+    ytPlayer = new YT.Player('yt-player-container', {
+        height: '0',
+        width: '0',
+        videoId: '5qap5aO4i9A', // Default to Lofi Girl stream
+        playerVars: { 
+            'autoplay': 0, 
+            'controls': 0, 
+            'disablekb': 1,
+            'rel': 0,
+            'modestbranding': 1
+        },
+        events: {
+            'onReady': () => console.log('YT Audio Engine Hazır! 📻')
+        }
+    });
+};
+
 const AudioEngine = {
-    audioCtx: null,
-    source: null,
-    gainNode: null,
-    
-    init() {
-        try {
-            window.AudioContext = window.AudioContext || window.webkitAudioContext;
-            this.audioCtx = new AudioContext();
-            this.gainNode = this.audioCtx.createGain();
-            this.gainNode.connect(this.audioCtx.destination);
-            this.gainNode.gain.value = 0;
-            console.log("Audio Engine Hazır! 🔉");
-        } catch(e) { console.warn("Audio Context Hatası:", e); }
+    // Curated high-quality audio streams
+    // Lofi: Lofi Girl Live, Rain: Rain sounds, Forest: Forest birds
+    streams: {
+        'lofi': 'jfKfPfyJRdk', 
+        'rain': 'mPZkdNFkNps',
+        'forest': 'xNN7iTA57jM'
     },
     
     play(type) {
-        if (!this.audioCtx) this.init();
-        if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
-        
-        this.stop();
-        
-        const bufferSize = 2 * this.audioCtx.sampleRate,
-        noiseBuffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate),
-        output = noiseBuffer.getChannelData(0);
-
-        for (let i = 0; i < bufferSize; i++) {
-            output[i] = Math.random() * 2 - 1;
+        if (!ytPlayer || !ytPlayer.loadVideoById) {
+            showToast("⚠️ Ses motoru birazdan hazır olacak. Lütfen internetini kontrol et.");
+            return;
         }
-
-        this.source = this.audioCtx.createBufferSource();
-        this.source.buffer = noiseBuffer;
-        this.source.loop = true;
         
-        // Simple Nature Filter (Lowpass)
-        const filter = this.audioCtx.createBiquadFilter();
-        filter.type = type === 'rain' ? 'lowpass' : 'bandpass';
-        filter.frequency.value = type === 'rain' ? 400 : 800;
+        const videoId = this.streams[type] || this.streams['lofi'];
         
-        this.source.connect(filter);
-        filter.connect(this.gainNode);
+        // Load and play the selected stream
+        ytPlayer.loadVideoById(videoId);
+        ytPlayer.playVideo();
+        ytPlayer.setVolume(50); // Balanced default volume
         
-        this.gainNode.gain.setTargetAtTime(0.3, this.audioCtx.currentTime, 0.1);
-        this.source.start();
-        showToast(`${type.toUpperCase()} Başlatıldı! 🧘`);
+        showToast(`${type.toUpperCase()} Yayını Başladı! 📻`);
     },
     
     stop() {
-        if (this.source) {
-            this.gainNode.gain.setTargetAtTime(0, this.audioCtx.currentTime, 0.1);
-            setTimeout(() => { if (this.source) this.source.stop(); }, 200);
+        if (ytPlayer && ytPlayer.stopVideo) {
+            ytPlayer.pauseVideo();
         }
     }
 };
 
-// Global click primer
-document.addEventListener('click', () => {
-    if (!AudioEngine.audioCtx) AudioEngine.init();
-    if (AudioEngine.audioCtx.state === 'suspended') AudioEngine.audioCtx.resume();
-    // Play a tiny silent note to unlock
-    const osc = AudioEngine.audioCtx.createOscillator();
-    const g = AudioEngine.audioCtx.createGain();
-    g.gain.value = 0.0001;
-    osc.connect(g); g.connect(AudioEngine.audioCtx.destination);
-    osc.start(); osc.stop(AudioEngine.audioCtx.currentTime + 0.1);
-}, { once: true });
+// V14 note: We no longer need the global click listener because YouTube iframe
+// executes playVideo() securely during the user's click event on toggleSound.
 
 function renderExams() {
     const list = document.getElementById('exam-list');

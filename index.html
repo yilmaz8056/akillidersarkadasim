@@ -6,6 +6,9 @@
     <title>Akıllı Ders Arkadaşım | 6. Sınıf Başarı Paneli</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f0c29">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script>
@@ -58,10 +61,6 @@
                     </li>
                     <li id="nav-flashcards" onclick="showSection('flashcards')"><i class="fas fa-layer-group"></i> Kartlarım</li>
                     <li id="nav-library" onclick="showSection('library')"><i class="fas fa-book-open"></i> Kitaplığım</li>
-                    <li onclick="showSection('market')" id="nav-market">
-                        <i class="fas fa-store"></i>
-                        <span>Market</span>
-                    </li>
                     <li onclick="showSection('profile')" id="nav-profile">
                         <i class="fas fa-user-circle"></i>
                         <span>Profil</span>
@@ -102,6 +101,9 @@
         </div>
     </div>
 
+    <!-- Hidden YouTube Player for Audio Engine -->
+    <div id="yt-player-container" style="position: absolute; width: 0; height: 0; overflow: hidden; opacity: 0; pointer-events: none;"></div>
+
     <!-- Modals -->
             <!-- Mobile Top Bar -->
             <div class="mobile-top-bar">
@@ -110,7 +112,10 @@
                     <span class="logo-text">Ders Arkadaşım</span>
                 </div>
                 <div style="display:flex; align-items:center; gap:15px;" id="top-bar-stats">
-                    <div class="coin-display"><i class="fas fa-coins" style="color:#ffd700"></i> <span id="coin-count-top">0</span></div>
+                    <!-- Market is now opened by clicking the DP display -->
+                    <div class="coin-display" onclick="showSection('market')" style="cursor:pointer; transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'" title="Marketi Aç">
+                        <i class="fas fa-coins" style="color:#ffd700"></i> <span id="coin-count-top">0</span>
+                    </div>
                 </div>
             </div>
 
