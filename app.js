@@ -25,10 +25,13 @@ let state = {
     level: parseInt(localStorage.getItem('study_level')) || 1,
     dailyXP: JSON.parse(localStorage.getItem('study_daily_xp')) || { date: new Date().toDateString(), amount: 0 },
     
-    assignments: JSON.parse(localStorage.getItem('study_assignments')) || [],
-    lastRiddleDate: localStorage.getItem('study_riddle_date') || "",
     library: JSON.parse(localStorage.getItem('study_library')) || [],
-    dailyQuestions: parseInt(localStorage.getItem('study_daily_questions')) || 0
+    dailyQuestions: parseInt(localStorage.getItem('study_daily_questions')) || 0,
+    
+    // V16: Timetable
+    timetable: JSON.parse(localStorage.getItem('study_timetable')) || {
+        'Pazartesi': [], 'Salı': [], 'Çarşamba': [], 'Perşembe': [], 'Cuma': []
+    }
 };
 
 function todayDate() { return new Date().toDateString(); }
@@ -205,6 +208,7 @@ function updateUI() {
     renderLeaderboard();
     updateDailyGoalDisplay();
     updateQuestionRing();
+    renderTimetable();
 }
 
 function updateDailyGoalDisplay() {
@@ -1337,3 +1341,56 @@ function resetTimer() {
     const shield = document.getElementById('focus-shield');
     if (shield) shield.classList.remove('active');
 }
+
+// --- V16 Weekly Timetable System ---
+function renderTimetable() {
+    const grid = document.getElementById('timetable-grid');
+    if (!grid) return;
+    
+    const days = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma'];
+    const maxSlots = 8; // 8 periods per day is standard
+    
+    grid.innerHTML = days.map(day => {
+        const slots = state.timetable[day] || [];
+        let inputsHTML = '';
+        for (let i = 0; i < maxSlots; i++) {
+            const val = slots[i] || '';
+            inputsHTML += `
+                <div class="timetable-slot">
+                    <span style="opacity:0.5; font-size:0.7rem; align-self:center; min-width:15px;">${i+1}.</span>
+                    <input type="text" class="timetable-input" data-day="${day}" data-slot="${i}" value="${val}" placeholder="..." onchange="saveTimetable()">
+                </div>
+            `;
+        }
+        return `
+            <div class="timetable-col">
+                <div class="timetable-day-header">${day}</div>
+                ${inputsHTML}
+            </div>
+        `;
+    }).join('');
+}
+
+function saveTimetable() {
+    const inputs = document.querySelectorAll('.timetable-input');
+    const newTimetable = { 'Pazartesi': [], 'Salı': [], 'Çarşamba': [], 'Perşembe': [], 'Cuma': [] };
+    
+    inputs.forEach(input => {
+        const day = input.getAttribute('data-day');
+        const slot = input.getAttribute('data-slot');
+        newTimetable[day][slot] = input.value;
+    });
+    
+    state.timetable = newTimetable;
+    localStorage.setItem('study_timetable', JSON.stringify(state.timetable));
+}
+
+// Initial Boot Load
+window.onload = function() {
+    updateUI();
+    checkStreak();
+    setTimeout(updateDailyTip, 1000);
+    renderLibrary();
+    // Assuming loadRiddle exists or safely ignoring
+    if (typeof loadRiddle === 'function') loadRiddle();
+};
