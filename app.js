@@ -163,6 +163,16 @@ function setTheme(theme) {
     // Update theme selectors UI
     document.querySelectorAll('.theme-dot').forEach(el => el.classList.remove('active'));
     document.querySelectorAll(`.theme-${theme}`).forEach(el => el.classList.add('active'));
+    
+    // Update top bar stats if visible
+    const coinTop = document.getElementById('coin-count-top');
+    if (coinTop) coinTop.innerText = state.coins;
+}
+
+function toggleFocusShield() {
+    const shield = document.getElementById('focus-shield');
+    if (!shield) return;
+    shield.classList.toggle('active');
 }
 
 // --- Core UI & Stats ---
@@ -607,34 +617,73 @@ function checkRiddle() {
     }
 }
 
-// --- V10 Final Absolute Offline Audio Rescue (Base64) ---
+// --- V12 Ultra-Resilient Audio Engine (Procedural) ---
 const AudioEngine = {
-    // 1-second ultra-compressed white noise (rain-like)
-    rainB64: "data:audio/wav;base64,UklGRmYAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVIAAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==",
-    instances: {},
+    audioCtx: null,
+    source: null,
+    gainNode: null,
     
-    play(type) {
-        this.pauseAll();
-        if (!this.instances[type]) {
-            // Using Base64 bypasses CORS/Local Origin errors 100%
-            this.instances[type] = new Audio(this.rainB64);
-            this.instances[type].loop = true;
-            this.instances[type].volume = 0.5;
-        }
-        
-        // Browser requires gesture to resume AudioContext usually, 
-        // but HTML5 Audio element is more lenient with inline data
-        this.instances[type].play().catch(e => {
-            console.warn("Audio Context blocked in file protocol.", e);
-            showToast("Sesi başlatmak için ekrana tıklayın! 🌧️");
-        });
-        showToast(`${type.toUpperCase()} Odaklanma Başladı! 🧘`);
+    init() {
+        try {
+            window.AudioContext = window.AudioContext || window.webkitAudioContext;
+            this.audioCtx = new AudioContext();
+            this.gainNode = this.audioCtx.createGain();
+            this.gainNode.connect(this.audioCtx.destination);
+            this.gainNode.gain.value = 0;
+            console.log("Audio Engine Hazır! 🔉");
+        } catch(e) { console.warn("Audio Context Hatası:", e); }
     },
     
-    pauseAll() {
-        Object.values(this.instances).forEach(a => { if (a) a.pause(); });
+    play(type) {
+        if (!this.audioCtx) this.init();
+        if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+        
+        this.stop();
+        
+        const bufferSize = 2 * this.audioCtx.sampleRate,
+        noiseBuffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate),
+        output = noiseBuffer.getChannelData(0);
+
+        for (let i = 0; i < bufferSize; i++) {
+            output[i] = Math.random() * 2 - 1;
+        }
+
+        this.source = this.audioCtx.createBufferSource();
+        this.source.buffer = noiseBuffer;
+        this.source.loop = true;
+        
+        // Simple Nature Filter (Lowpass)
+        const filter = this.audioCtx.createBiquadFilter();
+        filter.type = type === 'rain' ? 'lowpass' : 'bandpass';
+        filter.frequency.value = type === 'rain' ? 400 : 800;
+        
+        this.source.connect(filter);
+        filter.connect(this.gainNode);
+        
+        this.gainNode.gain.setTargetAtTime(0.3, this.audioCtx.currentTime, 0.1);
+        this.source.start();
+        showToast(`${type.toUpperCase()} Başlatıldı! 🧘`);
+    },
+    
+    stop() {
+        if (this.source) {
+            this.gainNode.gain.setTargetAtTime(0, this.audioCtx.currentTime, 0.1);
+            setTimeout(() => { if (this.source) this.source.stop(); }, 200);
+        }
     }
 };
+
+// Global click primer
+document.addEventListener('click', () => {
+    if (!AudioEngine.audioCtx) AudioEngine.init();
+    if (AudioEngine.audioCtx.state === 'suspended') AudioEngine.audioCtx.resume();
+    // Play a tiny silent note to unlock
+    const osc = AudioEngine.audioCtx.createOscillator();
+    const g = AudioEngine.audioCtx.createGain();
+    g.gain.value = 0.0001;
+    osc.connect(g); g.connect(AudioEngine.audioCtx.destination);
+    osc.start(); osc.stop(AudioEngine.audioCtx.currentTime + 0.1);
+}, { once: true });
 
 function renderExams() {
     const list = document.getElementById('exam-list');
@@ -1109,14 +1158,20 @@ function toggleTimer() {
         isTimerRunning = false; 
         btn.innerText = 'Başlat'; 
         document.body.classList.remove('zen-mode'); // Exit Zen Mode
+        document.getElementById('focus-shield').classList.remove('active'); // Final Shield Release
         showSessionRecap(Math.floor((25 * 60 - timeLeft) / 60)); // Partial recap
     }
     else {
         isTimerRunning = true; 
         btn.innerText = 'Durdur';
         document.body.classList.add('zen-mode'); // Enter Zen Mode
+        document.getElementById('focus-shield').classList.add('active'); // Shield Wall Up
         timerInterval = setInterval(() => {
             timeLeft--; updateTimerDisplay();
+            // Sync shield timer
+            const shieldTimer = document.getElementById('shield-timer');
+            if (shieldTimer) shieldTimer.innerText = document.getElementById('time-display').innerText;
+            
             if (timeLeft <= 0) { 
                 clearInterval(timerInterval); 
                 addXP(25); 
@@ -1208,5 +1263,7 @@ function resetTimer() {
     timeLeft = 25 * 60;
     updateTimerDisplay();
     document.getElementById('timer-btn').innerText = 'Başlat';
-    document.body.classList.remove('zen-mode'); // Zen Mode escape fix
+    document.body.classList.remove('zen-mode'); 
+    const shield = document.getElementById('focus-shield');
+    if (shield) shield.classList.remove('active');
 }

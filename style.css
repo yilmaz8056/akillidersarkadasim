@@ -25,7 +25,8 @@ body.theme-dark {
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
-body { background: var(--bg-gradient); background-attachment: fixed; height: 100vh; color: var(--text-primary); overflow: hidden; user-select: none; }
+body { background: var(--bg-gradient); background-attachment: fixed; min-height: 100vh; color: var(--text-primary); overflow-x: hidden; width: 100%; user-select: none; }
+main { width: 100%; max-width: 100%; }
 
 .app-container { display: grid; grid-template-columns: 280px 1fr; height: 100vh; }
 
@@ -215,3 +216,15 @@ body.zen-mode .breathing-aura { display: block; }
     .section#timer.active { min-height: 60vh; }
     .timer-display { font-size: 5rem; }
 }
+/* V12: Focus Shield Styling */
+.focus-shield-overlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(25px);
+    z-index: 9999; display: none; align-items: center; justify-content: center;
+    text-align: center; color: white; transition: 0.5s;
+}
+.focus-shield-overlay.active { display: flex; animation: fadeIn 0.5s ease; }
+.shield-content h2 { font-size: 5rem; font-weight: 800; margin-bottom: 20px; text-shadow: 0 0 30px var(--accent-blue); }
+.shield-content p { font-size: 1.2rem; opacity: 0.8; margin-bottom: 30px; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

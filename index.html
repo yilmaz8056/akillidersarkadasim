@@ -95,19 +95,25 @@
 
         <!-- Main Content Area -->
         <main>
+            <!-- V12: Odaklanma Kalkanı Overlay -->
+    <div id="focus-shield" class="focus-shield-overlay">
+        <div class="shield-content">
+            <h2 id="shield-timer">25:00</h2>
+            <p>Odaklanma Kalkanı Aktif. Rahatsız edilmeyeceksin. 🛡️</p>
+            <button class="btn btn-outline" onclick="toggleFocusShield()">Kalkanı Kaldır</button>
+        </div>
+    </div>
+
+    <!-- Modals -->
             <!-- Mobile Top Bar -->
             <div class="mobile-top-bar">
                 <div style="display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="showSection('profile')">
                     <div class="avatar" style="width:35px; height:35px; font-size:1.2rem; display:flex; align-items:center; justify-content:center;">👤</div>
                     <span class="logo-text">Ders Arkadaşım</span>
                 </div>
-                <div style="display:flex; align-items:center; gap:15px;">
-                    <div class="stat-card">
-                        <h3><i class="fas fa-palette"></i> Görünüm Ayarları</h3>
-                        <div style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">
-                            <button class="btn btn-primary" onclick="toggleDarkMode()" style="width:100%;"><i class="fas fa-moon"></i> Gece Modu Aç/Kapat</button>
-                        </div>
-                    </div>
+                <div style="display:flex; align-items:center; gap:15px;" id="top-bar-stats">
+                    <div class="coin-display"><i class="fas fa-coins" style="color:#ffd700"></i> <span id="coin-count-top">0</span></div>
+                </div>
             </div>
 
             <!-- Dashboard Section -->
@@ -369,6 +375,12 @@
                         <div id="exam-list" class="exam-list" style="margin-top:10px;"></div>
                     </div>
                     <div class="stat-card">
+                        <h3><i class="fas fa-palette"></i> Görünüm Ayarları</h3>
+                        <div style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">
+                            <button class="btn btn-primary" onclick="toggleDarkMode()" style="width:100%;"><i class="fas fa-moon"></i> Gece Modu Aç/Kapat</button>
+                        </div>
+                    </div>
+                    <div class="stat-card">
                         <h3>Veri Yönetimi</h3>
                         <div style="display:flex; gap:10px; margin-top:1rem;">
                             <button class="btn btn-outline" onclick="exportData()" style="flex:1;">Yedekle</button>
@@ -376,7 +388,6 @@
                                 Yükle <input type="file" id="import-file" hidden onchange="importData(this)">
                             </label>
                         </div>
-                        <button class="btn btn-primary" onclick="toggleDarkMode()" style="width:100%; margin-top:10px;"><i class="fas fa-moon"></i> Gece Modu Aç/Kapat</button>
                         <button class="btn btn-outline" onclick="exportPDFReport()" style="width:100%; margin-top:10px; border-color:var(--accent-gold); color:var(--accent-gold);">
                             <i class="fas fa-file-pdf"></i> Başarı Karnesi İndir
                         </button>
