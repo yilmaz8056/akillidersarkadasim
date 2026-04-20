@@ -119,6 +119,12 @@ body.zen-mode .section#timer { background: transparent; border: none; box-shadow
 body.zen-mode .pomodoro-container { text-align: center; }
 body.zen-mode .timer-display { font-size: 14vw; position: relative; display: inline-block; }
 
+/* V12: Focus Shield Layer */
+.focus-shield-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
+.focus-shield-overlay.active { opacity: 1; pointer-events: all; }
+.shield-content { text-align: center; background: rgba(20, 20, 30, 0.9); padding: 50px; border-radius: 30px; box-shadow: 0 0 100px rgba(0, 210, 255, 0.2); border: 1px solid rgba(255,255,255,0.05); }
+#shield-timer { font-size: 8rem; margin-bottom: 20px; text-shadow: 0 0 20px rgba(0,210,255,0.5); }
+
 /* Breathing Circle Animation for Zen Mode */
 .breathing-aura { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, var(--zen-glow) 0%, transparent 65%); z-index: -1; animation: breatheBase 8s infinite ease-in-out; display: none; pointer-events: none; filter: blur(20px); }
 body.zen-mode .breathing-aura { display: block; }
