@@ -197,6 +197,7 @@ function updateUI() {
     safeSetText('stats-time', `${state.studyTime} dk`);
     safeSetText('stats-coins', state.coins);
     safeSetText('coin-count', state.coins);
+    safeSetText('market-coin-display', state.coins); // V17
     safeSetText('sidebar-avatar', state.activeAvatar);
     safeSetText('profile-avatar', state.activeAvatar);
 
@@ -1017,7 +1018,7 @@ function importData(input) {
     }
 }
 
-// --- Timer & Sound ---
+// --- Timer & Sound (V17 Native Audio) ---
 function startSubject(subjectName) {
     showSection('timer');
     document.getElementById('timer-label').innerText = `${subjectName} Çalışması`;
@@ -1027,27 +1028,62 @@ function startSubject(subjectName) {
 function toggleSound(type) {
     const btn = document.getElementById(`sound-${type}`);
     const audio = document.getElementById(`audio-${type}`);
+    
+    // Stop others
     ['rain', 'forest', 'lofi'].forEach(t => {
         if (t !== type) {
             const b = document.getElementById(`sound-${t}`);
             const a = document.getElementById(`audio-${t}`);
-            if (b) b.classList.remove('active');
+            if (b) b.classList.remove('active', 'btn-primary');
+            if (b) b.classList.add('btn-outline');
             if (a) a.pause();
         }
     });
-    if (btn.classList.toggle('active')) {
-        audio.play().catch(() => showToast('Ses başlatılamadı.'));
-        showToast(`${type.toUpperCase()} sesi açıldı. 🎵`);
-    } else { audio.pause(); showToast('Ses kapatıldı.'); }
+
+    // Toggle current
+    if (audio.paused) {
+        audio.play().catch(() => showToast('Ses bağlantısı bekleniyor.'));
+        showToast(`${type.toUpperCase()} çalıyor 🎵`);
+        btn.classList.add('active', 'btn-primary');
+        btn.classList.remove('btn-outline');
+    } else { 
+        audio.pause(); 
+        showToast('Ses durduruldu.'); 
+        btn.classList.remove('active', 'btn-primary');
+        btn.classList.add('btn-outline');
+    }
 }
 
+// --- Theme Settings Removed in V17 ---
 function setTheme(t) {
+    // Kept for backward compatibility parsing in state if any old user data exists, but UI relies heavily on V17 standard
     state.theme = t; localStorage.setItem('study_theme', t);
-    document.body.className = t === 'default' ? '' : `theme-${t}`;
-    document.querySelectorAll('.theme-dot').forEach(dot => {
-        dot.classList.remove('active');
-        if (dot.classList.contains(`theme-${t}`)) dot.classList.add('active');
-    });
+}
+
+// --- V17 Market System ---
+function buyItem(avatar, cost, el) {
+    if (state.inventory.includes(avatar)) {
+        state.activeAvatar = avatar;
+        localStorage.setItem('study_avatar', avatar);
+        showToast(`Avatar seçildi: ${avatar}`);
+        updateUI();
+        return;
+    }
+    
+    if (state.coins >= cost) {
+        state.coins -= cost;
+        state.inventory.push(avatar);
+        state.activeAvatar = avatar;
+        localStorage.setItem('study_coins', state.coins);
+        localStorage.setItem('study_inventory', JSON.stringify(state.inventory));
+        localStorage.setItem('study_avatar', avatar);
+        
+        showToast(`Tebrikler! Yeni avatar aldın: ${avatar} 🎉`);
+        createSparkles(window.innerWidth/2, window.innerHeight/2);
+        updateUI();
+    } else {
+        showToast(`Yetersiz DP! ${cost - state.coins} DP daha lazım. Soru çözerek kazanabilirsin! 📚`);
+    }
 }
 
 // --- Streak & Chart & Tasks & Cards ---

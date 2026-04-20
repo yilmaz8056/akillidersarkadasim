@@ -308,15 +308,18 @@
                         <div class="breathing-aura"></div>
                         25:00
                     </div>
-                    <!-- V16 Premium Spotify Embed -->
-                    <div class="sound-controls" style="margin-top:2rem; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 20px; border: 1px solid var(--glass-border); box-shadow: inset 0 0 20px rgba(0,0,0,0.5);">
-                        <h4 style="margin-bottom:15px; font-size:1.1rem; text-align: left; display:flex; align-items:center; gap:10px;">
-                            <span style="display:inline-block; width:12px; height:12px; background:#1db954; border-radius:50%; box-shadow: 0 0 15px #1db954, 0 0 5px #1db954; animation: pulse 2s infinite;"></span>
-                            <span style="opacity:0.9; font-weight:800;">Spotify Lofi Lounge</span>
-                        </h4>
-                        <div style="border-radius:12px; overflow:hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.8); transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-                            <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/0vvXsWCC9xrXsKd4Zsnsnj?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                    <!-- Native Audio Engine (Safe) -->
+                    <div class="sound-controls" style="margin-top:2rem; background:var(--glass-bg); padding:1rem; border-radius:20px; border:1px solid var(--glass-border);">
+                        <h4 style="margin-bottom:10px; font-size:1rem; opacity:0.8;">📻 Odaklanma Sesleri</h4>
+                        <div style="display:flex; gap:10px; justify-content:center;">
+                            <button class="btn btn-outline" style="border-radius:50%; width:60px; height:60px; font-size:1.5rem;" onclick="toggleSound('rain')" id="sound-rain" title="Yağmur Sesi">🌧️</button>
+                            <button class="btn btn-outline" style="border-radius:50%; width:60px; height:60px; font-size:1.5rem;" onclick="toggleSound('forest')" id="sound-forest" title="Orman Sesi">🌲</button>
+                            <button class="btn btn-outline" style="border-radius:50%; width:60px; height:60px; font-size:1.5rem;" onclick="toggleSound('lofi')" id="sound-lofi" title="Lofi Frekans">🎧</button>
                         </div>
+                        <audio id="audio-rain" loop preload="none"><source src="https://actions.google.com/sounds/v1/water/rain.ogg" type="audio/mpeg"></audio>
+                        <audio id="audio-forest" loop preload="none"><source src="https://actions.google.com/sounds/v1/nature/nature_creatures_ambience_1.ogg" type="audio/mpeg"></audio>
+                        <!-- Using Pixabay verified lofi -->
+                        <audio id="audio-lofi" loop preload="none"><source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3" type="audio/mpeg"></audio>
                     </div>
                     <div class="timer-controls" style="margin-top:20px;">
                         <button class="btn btn-outline" onclick="resetTimer()">Sıfırla</button>
@@ -414,15 +417,7 @@
                         </div>
                         <div id="exam-list" class="exam-list" style="margin-top:10px;"></div>
                     </div>
-                    <div class="stat-card">
-                        <h3><i class="fas fa-palette"></i> Görünüm Ayarları</h3>
-                        <p style="font-size:0.75rem; opacity:0.7; margin:5px 0 15px 0;">Tercih ettiğin arayüz temasını seç.</p>
-                        <div class="theme-switcher" style="display:flex; justify-content:space-around; align-items:center; background:rgba(0,0,0,0.2); padding:15px; border-radius:12px;">
-                            <div class="theme-dot theme-default active" onclick="setTheme('default')" title="Gece" style="width:35px; height:35px; box-shadow:0 0 10px rgba(0,210,255,0.5);"></div>
-                            <div class="theme-dot theme-purple" onclick="setTheme('purple')" title="Nebula" style="width:35px; height:35px; box-shadow:0 0 10px rgba(224,64,251,0.5);"></div>
-                            <div class="theme-dot theme-gold" onclick="setTheme('gold')" title="Altın" style="width:35px; height:35px; box-shadow:0 0 10px rgba(255,215,0,0.5);"></div>
-                        </div>
-                    </div>
+                    <!-- Theme Seçimi (Tasarım İstekleri Gereği Kaldırıldı) -->
                     <div class="stat-card">
                         <h3>Veri Yönetimi</h3>
                         <div style="display:flex; gap:10px; margin-top:1rem;">
@@ -477,6 +472,47 @@
                 </div>
                 <div class="timetable-grid" id="timetable-grid">
                     <!-- Javascript will inject 5 columns here -->
+                </div>
+            </section>
+
+            <!-- V17 Restored Market -->
+            <section id="market" class="section">
+                <div class="header-row" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div><h2>Market Yeri</h2><p>Kazandığın Paraları Burada Harca 💰</p></div>
+                    <div class="coin-display" style="font-size:1.5rem;"><i class="fas fa-coins" style="color:#ffd700"></i> <span id="market-coin-display">0</span></div>
+                </div>
+                <!-- Premium Market CSS implemented inline -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.5rem; margin-top:20px;">
+                    <!-- Klasik -->
+                    <div class="stat-card market-item-card" onclick="buyItem('👤', 0, this)" style="text-align:center; padding:20px; cursor:pointer;">
+                        <div style="font-size:4rem; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); margin-bottom:10px;">👤</div>
+                        <h4 style="margin:5px 0;">Klasik</h4>
+                        <div style="background:var(--accent-blue); color:white; border-radius:10px; padding:5px; font-weight:800; font-size:0.9rem;">Sahipsin</div>
+                    </div>
+                    <!-- Kedi Uzmanı -->
+                    <div class="stat-card market-item-card" onclick="buyItem('🐱', 50, this)" style="text-align:center; padding:20px; cursor:pointer;">
+                        <div style="font-size:4rem; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); margin-bottom:10px;">🐱</div>
+                        <h4 style="margin:5px 0;">Kedi Uzmanı</h4>
+                        <div style="background:rgba(255,215,0,0.2); border:1px solid var(--accent-gold); color:var(--accent-gold); border-radius:10px; padding:5px; font-weight:800; font-size:0.9rem;"><i class="fas fa-coins"></i> 50 DP</div>
+                    </div>
+                    <!-- Ateş Ejderi -->
+                    <div class="stat-card market-item-card" onclick="buyItem('🐲', 150, this)" style="text-align:center; padding:20px; cursor:pointer;">
+                        <div style="font-size:4rem; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); margin-bottom:10px;">🐲</div>
+                        <h4 style="margin:5px 0;">Ateş Ejderi</h4>
+                        <div style="background:rgba(255,215,0,0.2); border:1px solid var(--accent-gold); color:var(--accent-gold); border-radius:10px; padding:5px; font-weight:800; font-size:0.9rem;"><i class="fas fa-coins"></i> 150 DP</div>
+                    </div>
+                    <!-- Uzaylı -->
+                    <div class="stat-card market-item-card" onclick="buyItem('👽', 300, this)" style="text-align:center; padding:20px; cursor:pointer;">
+                        <div style="font-size:4rem; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); margin-bottom:10px;">👽</div>
+                        <h4 style="margin:5px 0;">Uzaylı</h4>
+                        <div style="background:rgba(255,215,0,0.2); border:1px solid var(--accent-gold); color:var(--accent-gold); border-radius:10px; padding:5px; font-weight:800; font-size:0.9rem;"><i class="fas fa-coins"></i> 300 DP</div>
+                    </div>
+                    <!-- Kral Tacı -->
+                    <div class="stat-card market-item-card" onclick="buyItem('👑', 750, this)" style="text-align:center; padding:20px; cursor:pointer;">
+                        <div style="font-size:4rem; filter: drop-shadow(0 10px 10px rgba(255,215,0,0.5)); margin-bottom:10px;">👑</div>
+                        <h4 style="margin:5px 0; color:var(--accent-gold);">İmparator</h4>
+                        <div style="background:rgba(255,215,0,0.2); border:1px solid var(--accent-gold); color:var(--accent-gold); border-radius:10px; padding:5px; font-weight:800; font-size:0.9rem;"><i class="fas fa-coins"></i> 750 DP</div>
+                    </div>
                 </div>
             </section>
         </main>
