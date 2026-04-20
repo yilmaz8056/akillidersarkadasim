@@ -56,10 +56,8 @@
                         <i class="fas fa-tasks"></i>
                         <span>Görevler</span>
                     </li>
-                    <li onclick="showSection('flashcards')" id="nav-flashcards">
-                        <i class="fas fa-clone"></i>
-                        <span>Kartlarım</span>
-                    </li>
+                    <li id="nav-flashcards" onclick="showSection('flashcards')"><i class="fas fa-layer-group"></i> Kartlarım</li>
+                    <li id="nav-library" onclick="showSection('library')"><i class="fas fa-book-open"></i> Kitaplığım</li>
                     <li onclick="showSection('market')" id="nav-market">
                         <i class="fas fa-store"></i>
                         <span>Market</span>
@@ -412,6 +410,16 @@
                     <button class="btn btn-primary" onclick="addFlashcard()">Ekle</button>
                 </div>
                 <div id="flashcards-grid" class="flashcards-grid"></div>
+            </section>
+
+            <section id="library" class="section">
+                <div class="header-row"><h2>Hızlı Notlar (Kitaplık)</h2></div>
+                <div class="card-input-row" style="display:flex; gap:10px;">
+                    <input type="text" id="library-subject" class="input-glass" placeholder="Başlık (Örn: Matematik Formülü)" style="flex:1;">
+                    <input type="text" id="library-note" class="input-glass" placeholder="Notunuz..." style="flex:2;">
+                    <button class="btn btn-primary" onclick="saveLibraryNote()">Yapıştır</button>
+                </div>
+                <div id="library-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top:20px; padding:20px; background:rgba(0,0,0,0.2); border-radius:12px;"></div>
             </section>
         </main>
     </div>

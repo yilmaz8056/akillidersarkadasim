@@ -129,13 +129,19 @@ function toggleDarkMode() {
 function renderLibrary() {
     const list = document.getElementById('library-list');
     if (!list) return;
-    list.innerHTML = state.library.map((note, i) => `
-        <div class="library-card stat-card">
-            <h4 style="margin:0;">${note.subject}</h4>
-            <p style="margin:10px 0;">${note.text}</p>
-            <button class="btn btn-outline" style="font-size:0.7rem; padding:4px 8px;" onclick="deleteLibraryNote(${i})">Sil</button>
+    const postItColors = ['#ff7eb3', '#ffdf00', '#00d2ff', '#00ff87'];
+    list.innerHTML = state.library.map((note, i) => {
+        const color = postItColors[i % postItColors.length];
+        const rot = (Math.random() * 6 - 3).toFixed(1); // Random rotation between -3 and 3 degrees
+        return `
+        <div class="post-it-note" style="background:${color}; transform:rotate(${rot}deg); color:#111; padding:15px; border-radius:4px; box-shadow: 2px 4px 10px rgba(0,0,0,0.3); position:relative; min-height:120px;">
+            <div style="width: 30px; height: 10px; background: rgba(0,0,0,0.1); position: absolute; top: 5px; left: 50%; transform: translateX(-50%); border-radius: 5px;"></div>
+            <h4 style="margin:10px 0 5px 0; border-bottom:1px solid rgba(0,0,0,0.1); text-transform:uppercase; font-size:0.8rem;">📌 ${note.subject}</h4>
+            <p style="margin:5px 0 20px 0; font-family:'Comic Sans MS', cursive, sans-serif; font-size:0.95rem;">${note.text}</p>
+            <button class="btn btn-outline" style="font-size:0.7rem; padding:4px 8px; border-color:#111; color:#111; position:absolute; bottom:10px; right:10px;" onclick="deleteLibraryNote(${i})">Çöpe At</button>
         </div>
-    `).join('') || '<p style="opacity:0.5; font-size:0.85rem; grid-column: 1/-1; text-align:center;">Henüz not eklenmedi.</p>';
+        `;
+    }).join('') || '<p style="opacity:0.5; font-size:0.85rem; grid-column: 1/-1; text-align:center;">Panoda hiç not yok! 📝</p>';
 }
 
 function saveLibraryNote() {
@@ -237,16 +243,35 @@ function claimBattlePassReward() {
     // Reset daily effort for reward? No, just one claim per day logic in real app, here it stays till reset
 }
 
-// Gamified Badge Unlocker
+// Gamified Badge Unlocker (Unified)
 function checkBadges() {
+    // 1. Check Mini-Emoji Badges
+    const xp = state.xp;
+    const newBadges = [];
+    if (xp >= 50 && !state.badges.includes('🌱')) newBadges.push('🌱');
+    if (xp >= 200 && !state.badges.includes('⚡')) newBadges.push('⚡');
+    if (xp >= 500 && !state.badges.includes('🏆')) newBadges.push('🏆');
+    if (xp >= 1000 && !state.badges.includes('👑')) newBadges.push('👑');
+    if (state.tasksCompleted >= 5 && !state.badges.includes('✅')) newBadges.push('✅');
+    
+    if (newBadges.length > 0) {
+        state.badges.push(...newBadges);
+        localStorage.setItem('study_badges', JSON.stringify(state.badges));
+        showToast(`Yeni Rozet Kazandın: ${newBadges.join(' ')}`);
+    }
+
+    // 2. Check Legendary Showcase Badges
     const unlock = (id) => {
         const b = document.getElementById(id);
         if (b) b.classList.add('unlocked');
     };
-    if (state.tasksCompleted >= 10) unlock('badge-mathgenius');
-    if (state.studyTime >= 120) unlock('badge-focusmaster');
+    
+    // Validate the criteria dynamically
+    if (state.xp >= 1500) unlock('badge-mathgenius'); // Re-purposed criteria for test genius
+    if (state.weeklyFocus.reduce((a,b)=>a+b, 0) >= 120) unlock('badge-focusmaster'); // 120 mins focus total this week
+    
     const hour = new Date().getHours();
-    if (state.studyTime > 0) {
+    if (state.weeklyFocus.reduce((a,b)=>a+b, 0) > 0) {
         if (hour >= 21 || hour < 4) unlock('badge-nightowl');
         if (hour >= 5 && hour <= 8) unlock('badge-earlybird');
     }
@@ -310,21 +335,7 @@ function addXP(amount, subject = null) {
     updateUI();
 }
 
-function checkBadges() {
-    const xp = state.xp;
-    const newBadges = [];
-    if (xp >= 50 && !state.badges.includes('🌱')) newBadges.push('🌱');
-    if (xp >= 200 && !state.badges.includes('⚡')) newBadges.push('⚡');
-    if (xp >= 500 && !state.badges.includes('🏆')) newBadges.push('🏆');
-    if (xp >= 1000 && !state.badges.includes('👑')) newBadges.push('👑');
-    if (state.tasksCompleted >= 5 && !state.badges.includes('✅')) newBadges.push('✅');
-    
-    if (newBadges.length > 0) {
-        state.badges.push(...newBadges);
-        localStorage.setItem('study_badges', JSON.stringify(state.badges));
-        showToast(`Yeni Rozet Kazandın: ${newBadges.join(' ')}`);
-    }
-}
+// Unified checkBadges logic removed from here as it's merged above.
 
 // --- Navigation ---
 function showSection(sectionId) {
@@ -742,7 +753,7 @@ function toggleSound(type) {
         AudioEngine.play(type);
         showToast(`${type.toUpperCase()} sentezi başladı. 🎵`);
     } else {
-        AudioEngine.pauseAll();
+        AudioEngine.stop();
         showToast('Ses kapatıldı.');
     }
 }
@@ -1057,13 +1068,33 @@ function renderBadges() {
 function renderLeaderboard() {
     const container = document.getElementById('leaderboard-list');
     if (!container) return;
-    const mock = [{name:'Kuzey Yıldızı', xp:1250}, {name:'Siz', xp:state.xp, player:true}, {name:'Bilgin Ada', xp:850}].sort((a,b)=>b.xp-a.xp);
-    container.innerHTML = mock.map((u,i)=>`
-        <div class="leaderboard-item" style="${u.player?'border-color:var(--accent-blue); background:rgba(0,210,255,0.05)':''}">
-            <div class="leaderboard-rank">#${i+1}</div>
-            <div class="leaderboard-name">${u.name}</div>
-            <div class="leaderboard-xp">${u.xp} XP</div>
-        </div>`).join('');
+    
+    // Generate dynamic opponents based on user's XP to keep it competitive
+    const uXp = state.xp;
+    const mock = [
+        {name: 'Kuzey Yıldızı', xp: uXp > 2000 ? uXp + 450 : 2000, icon: '🌟'}, 
+        {name: 'Siz', xp: uXp, player: true, icon: state.activeAvatar || '👤'}, 
+        {name: 'Bilgin Ada', xp: uXp > 1000 ? uXp - 150 : 850, icon: '📚'},
+        {name: 'Hızlı Roket', xp: 400, icon: '🚀'},
+        {name: 'Uyuyan Kedi', xp: 120, icon: '🐱'}
+    ].sort((a, b) => b.xp - a.xp).filter(u => u.xp > 0);
+
+    container.innerHTML = mock.map((u, i) => {
+        let rankIcon = `#${i+1}`;
+        if (i === 0) rankIcon = '👑';
+        if (i === 1) rankIcon = '🥈';
+        if (i === 2) rankIcon = '🥉';
+        
+        return `
+        <div class="leaderboard-item" style="display:flex; align-items:center; gap:15px; padding:10px; border-radius:12px; margin-bottom:8px; ${u.player ? 'border: 2px solid var(--accent-blue); background:rgba(0,210,255,0.1); transform:scale(1.02);' : 'background:rgba(255,255,255,0.05);'} transition:0.3s;">
+            <div style="font-size:1.5rem; font-weight:800; min-width:35px; text-align:center; color:${i===0?'gold':i===1?'silver':i===2?'#cd7f32':'inherit'};">${rankIcon}</div>
+            <div style="font-size:1.5rem;">${u.icon}</div>
+            <div style="flex:1;">
+                <div style="font-weight:700; font-size:1rem; color:${u.player ? 'var(--accent-blue)' : 'inherit'};">${u.name}</div>
+            </div>
+            <div style="font-weight:900; font-family:monospace; font-size:1.1rem;">${u.xp} XP</div>
+        </div>`;
+    }).join('');
 }
 
 function addTask() {
