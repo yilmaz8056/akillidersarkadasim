@@ -31,7 +31,8 @@ let state = {
     // V16: Timetable
     timetable: JSON.parse(localStorage.getItem('study_timetable')) || {
         'Pazartesi': [], 'Salı': [], 'Çarşamba': [], 'Perşembe': [], 'Cuma': []
-    }
+    },
+    activeTimetableDay: 'Pazartesi' // V18
 };
 
 function todayDate() { return new Date().toDateString(); }
@@ -197,8 +198,10 @@ function updateUI() {
     safeSetText('stats-time', `${state.studyTime} dk`);
     safeSetText('stats-coins', state.coins);
     safeSetText('coin-count', state.coins);
-    safeSetText('market-coin-display', state.coins); // V17
-    safeSetText('sidebar-avatar', state.activeAvatar);
+    safeSetText('market-coin-display', state.coins);
+    safeSetText('coin-count-top', state.coins); // V18
+    safeSetText('user-name-title', state.username || 'Genç Kahraman'); // Mobile Dashboard
+    safeSetText('username-display-main', state.username || 'Genç Kahraman'); // Profile
     safeSetText('profile-avatar', state.activeAvatar);
 
     updateLevel();
@@ -1034,23 +1037,20 @@ function toggleSound(type) {
         if (t !== type) {
             const b = document.getElementById(`sound-${t}`);
             const a = document.getElementById(`audio-${t}`);
-            if (b) b.classList.remove('active', 'btn-primary');
-            if (b) b.classList.add('btn-outline');
+            if (b) b.classList.remove('active');
             if (a) a.pause();
         }
     });
 
     // Toggle current
     if (audio.paused) {
-        audio.play().catch(() => showToast('Ses bağlantısı bekleniyor.'));
-        showToast(`${type.toUpperCase()} çalıyor 🎵`);
-        btn.classList.add('active', 'btn-primary');
-        btn.classList.remove('btn-outline');
+        audio.play().catch(() => showToast('Ses bağlantısı bekleniyor...'));
+        showToast(`${type.toUpperCase()} çalıyor... 🎵`);
+        btn.classList.add('active');
     } else { 
         audio.pause(); 
         showToast('Ses durduruldu.'); 
-        btn.classList.remove('active', 'btn-primary');
-        btn.classList.add('btn-outline');
+        btn.classList.remove('active');
     }
 }
 
@@ -1106,6 +1106,9 @@ function checkStreak() {
         count.innerText = state.streak;
         badge.className = state.streak > 0 ? 'streak-visible' : 'streak-hidden';
     }
+    const mobileStreak = document.getElementById('streak-count-mobile');
+    if (mobileStreak) mobileStreak.innerText = state.streak;
+
     if (profileCount) {
         profileCount.innerText = `${state.streak} Gün`;
     }
@@ -1378,33 +1381,45 @@ function resetTimer() {
     if (shield) shield.classList.remove('active');
 }
 
-// --- V16 Weekly Timetable System ---
+// --- V18 Weekly Timetable System (Tabbed) ---
+function switchTimetableDay(day) {
+    state.activeTimetableDay = day;
+    
+    // Update Tabs UI
+    const dayMap = {'Pazartesi':'Pzt', 'Salı':'Sal', 'Çarşamba':'Çar', 'Perşembe':'Per', 'Cuma':'Cum'};
+    document.querySelectorAll('.day-tab').forEach(t => {
+        t.classList.remove('active');
+        if (t.innerText === dayMap[day]) t.classList.add('active');
+    });
+
+    renderTimetable();
+}
+
 function renderTimetable() {
     const grid = document.getElementById('timetable-grid');
     if (!grid) return;
     
-    const days = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma'];
-    const maxSlots = 8; // 8 periods per day is standard
+    const day = state.activeTimetableDay;
+    const maxSlots = 8;
+    const slots = state.timetable[day] || [];
     
-    grid.innerHTML = days.map(day => {
-        const slots = state.timetable[day] || [];
-        let inputsHTML = '';
-        for (let i = 0; i < maxSlots; i++) {
-            const val = slots[i] || '';
-            inputsHTML += `
-                <div class="timetable-slot">
-                    <span style="opacity:0.5; font-size:0.7rem; align-self:center; min-width:15px;">${i+1}.</span>
-                    <input type="text" class="timetable-input" data-day="${day}" data-slot="${i}" value="${val}" placeholder="..." onchange="saveTimetable()">
-                </div>
-            `;
-        }
-        return `
-            <div class="timetable-col">
-                <div class="timetable-day-header">${day}</div>
-                ${inputsHTML}
+    let inputsHTML = '';
+    for (let i = 0; i < maxSlots; i++) {
+        const val = slots[i] || '';
+        inputsHTML += `
+            <div class="timetable-slot">
+                <span style="opacity:0.6; font-size:0.75rem; font-weight:800; min-width:20px;">${i+1}</span>
+                <input type="text" class="timetable-input" data-day="${day}" data-slot="${i}" value="${val}" placeholder="Ders adı girin..." onchange="saveTimetable()">
             </div>
         `;
-    }).join('');
+    }
+
+    grid.innerHTML = `
+        <div class="timetable-col active">
+            <div class="timetable-day-header"><i class="fas fa-calendar-day"></i> ${day} Programı</div>
+            ${inputsHTML}
+        </div>
+    `;
 }
 
 function saveTimetable() {

@@ -2,24 +2,14 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Akıllı Ders Arkadaşım | 6. Sınıf Başarı Paneli</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ADA | Akıllı Ders Arkadaşım</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f0c29">
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-    <script src="https://www.youtube.com/iframe_api"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script>
-        // CRITICAL V9: Force unregister Service Workers to bypass persistent ghost caches
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                for(let registration of registrations) {
-                    registration.unregister();
-                }
-            });
-        }
         // Force Clear Cache for local development protocols
         if (window.caches) {
             caches.keys().then(function(names) {
@@ -29,584 +19,217 @@
     </script>
 </head>
 <body>
-    <!-- Hidden Audio Engine -->
-    <audio id="audio-rain" loop src="https://www.soundjay.com/nature/rain-07.mp3"></audio>
-    <audio id="audio-forest" loop src="https://www.soundjay.com/nature/forest-1.mp3"></audio>
-    <audio id="audio-lofi" loop src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"></audio>
-
     <div class="app-container">
-        <!-- Desktop Sidebar Navigation -->
+        <!-- V18 Mobile Navigation (Bottom Bar) -->
         <aside>
-            <div class="logo-section" onclick="showSection('dashboard')" style="cursor:pointer">
-                <h1>Ders Arkadaşım</h1>
-            </div>
-
             <nav>
                 <ul>
                     <li class="active" onclick="showSection('dashboard')" id="nav-dashboard">
-                        <i class="fas fa-th-large"></i>
-                        <span>Ana Panel</span>
+                        <i class="fas fa-home"></i>
+                        <span>Panel</span>
                     </li>
-                    <li onclick="showSection('lessons')" id="nav-lessons">
-                        <i class="fas fa-book-open"></i>
-                        <span>Derslerim</span>
+                    <li onclick="showSection('timetable')" id="nav-timetable">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Program</span>
                     </li>
                     <li onclick="showSection('timer')" id="nav-timer">
                         <i class="fas fa-clock"></i>
                         <span>Odaklan</span>
                     </li>
                     <li onclick="showSection('tasks')" id="nav-tasks">
-                        <i class="fas fa-tasks"></i>
+                        <i class="fas fa-check-double"></i>
                         <span>Görevler</span>
                     </li>
-                    <li id="nav-flashcards" onclick="showSection('flashcards')"><i class="fas fa-layer-group"></i> Kartlarım</li>
-                    <li id="nav-library" onclick="showSection('library')"><i class="fas fa-book-open"></i> Kitaplığım</li>
-                    <li id="nav-timetable" onclick="showSection('timetable')"><i class="fas fa-calendar-alt"></i> Ders Programım</li>
                     <li onclick="showSection('profile')" id="nav-profile">
-                        <i class="fas fa-user-circle"></i>
+                        <i class="fas fa-user-astronaut"></i>
                         <span>Profil</span>
                     </li>
                 </ul>
             </nav>
-
-            <!-- Desktop Theme Switcher -->
-            <div class="theme-switcher-container desktop-only">
-                <p class="stat-label" style="font-size: 0.6rem; margin-bottom: 8px; opacity: 0.6;">TEMA SEÇ</p>
-                <div class="theme-switcher">
-                    <div class="theme-dot theme-default active" onclick="setTheme('default')" title="Gece"></div>
-                    <div class="theme-dot theme-purple" onclick="setTheme('purple')" title="Nebula"></div>
-                    <div class="theme-dot theme-gold" onclick="setTheme('gold')" title="Altın"></div>
-                </div>
-            </div>
-
-            <div class="profile-card" onclick="showSection('profile')" style="cursor:pointer">
-                <div class="avatar" id="sidebar-avatar">👤</div>
-                <div class="user-info">
-                    <h3 id="username-display">Genç Kahraman</h3>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <p id="user-level">Seviye 1</p>
-                        <span id="streak-badge" class="streak-hidden" style="font-size:0.85rem; opacity:0.9; font-weight:700;"><i class="fas fa-fire" style="color:#ff8c00;"></i> <span id="streak-count">0</span> Gün Serisi</span>
-                    </div>
-                </div>
-            </div>
         </aside>
 
         <!-- Main Content Area -->
         <main>
-    <div id="focus-shield" class="focus-shield-overlay">
-        <div class="shield-content">
-            <h2 id="shield-timer">25:00</h2>
-            <p>Odaklanma Kalkanı Aktif. Rahatsız edilmeyeceksin. 🛡️</p>
-            <button class="btn btn-outline" onclick="toggleFocusShield()">Kalkanı Kaldır</button>
-        </div>
-    </div>
-
-    <!-- Modals -->
-            <!-- Mobile Top Bar -->
-            <div class="mobile-top-bar" style="display:flex; justify-content:space-between; align-items:center; padding:15px; background:var(--glass-bg); backdrop-filter:blur(10px); border-bottom:1px solid var(--glass-border); width: 100%;">
-                <div style="display:flex; align-items:center; gap:12px; cursor:pointer;" onclick="showSection('profile')">
-                    <div class="avatar" style="width:40px; height:40px; font-size:1.4rem; display:flex; align-items:center; justify-content:center; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">👤</div>
-                    <span class="logo-text" style="font-size:1.1rem; font-weight:800; letter-spacing:0.5px;">Ders Arkadaşım</span>
-                </div>
-                <div style="display:flex; align-items:center; gap:15px;" id="top-bar-stats">
-                    <!-- Market is now opened by clicking the DP display -->
-                    <div class="coin-display" onclick="showSection('market')" style="cursor:pointer; transition:transform 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'" title="Marketi Aç">
-                        <i class="fas fa-coins" style="color:#ffd700"></i> <span id="coin-count-top">0</span>
-                    </div>
+            <!-- Mobile Top Bar Info -->
+            <div class="mobile-top-bar">
+                <div class="logo-text">A.D.A.</div>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div id="streak-badge-mobile" style="color:#ff8c00; font-weight:800; font-size:0.95rem; background:rgba(255,140,0,0.1); padding:4px 8px; border-radius:8px;">🔥 <span id="streak-count-mobile">0</span></div>
+                    <div id="coin-display-top" style="color:#ffd700; font-weight:800; font-size:0.95rem; background:rgba(255,215,0,0.1); padding:4px 8px; border-radius:8px;" onclick="showSection('market')">🪙 <span id="coin-count-top">0</span></div>
                 </div>
             </div>
 
-            <!-- Dashboard Section -->
+            <!-- Focus Shield (V12) -->
+            <div id="focus-shield" class="focus-shield-overlay">
+                <div class="shield-content">
+                    <h2 id="shield-timer">25:00</h2>
+                    <p>Odaklanma Kalkanı Aktif. 🛡️</p>
+                    <button class="btn btn-outline" onclick="toggleFocusShield()">Kalkanı Kaldır</button>
+                </div>
+            </div>
+
+            <!-- V18 Optimized Mobile Dashboard -->
             <section id="dashboard" class="section active">
-                <div class="header-row" style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <h2>Hoş Geldin, <span id="user-display-name">Kahraman</span>!</h2>
-                        <p>Bugün harika bir öğrenme günü. 🚀</p>
-                    </div>
-                    <div id="study-buddy" class="study-buddy-container">
-                        <div class="buddy-bubble">Hadi başlayalım!</div>
-                        <div class="buddy-icon">😴</div>
-                    </div>
+                <div class="header-row">
+                    <h1>Sana Özel, <span id="user-name-title">Genç Kahraman</span>!</h1>
                 </div>
 
-                <!-- Daily Tip Banner -->
-                <div class="tip-banner" style="background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); padding: 15px 20px; border-radius: 15px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); animation: slideUp 0.6s ease;">
-                    <div style="font-size: 2rem;">💡</div>
-                    <div>
-                        <h4 style="margin:0; font-size:1.1rem; color:white;">Günün Tavsiyesi</h4>
-                        <p style="margin:0; font-size:0.9rem; opacity:0.9; color:white;" id="daily-tip-text">Su içmeyi unutma! Beynin su içtikçe daha iyi odaklanır.</p>
-                    </div>
-                </div>
-
-                <!-- V15 New: Günlük Soru Hedefi -->
-                <div class="stat-card" style="margin-bottom:20px; text-align:center;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                        <h3 style="margin:0;"><i class="fas fa-bullseye"></i> Günlük Soru Hedefi</h3>
-                    </div>
-                    <div style="display:flex; align-items:center; justify-content:center; gap:20px;">
-                        <!-- Progress Ring Visual -->
-                        <div style="position:relative; width:100px; height:100px;">
-                            <svg width="100" height="100" viewBox="0 0 100 100">
-                                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8"></circle>
-                                <circle id="question-ring" cx="50" cy="50" r="45" fill="none" stroke="var(--accent-purple)" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="283" stroke-linecap="round" style="transform: rotate(-90deg); transform-origin: 50% 50%; transition: 1s ease-out;"></circle>
-                            </svg>
-                            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-weight:800; font-size:1.2rem;">
-                                <span id="question-count">0</span>
-                            </div>
-                        </div>
-                        <div style="flex:1; text-align:left;">
-                            <p style="font-size:0.85rem; opacity:0.8; margin-bottom:10px;">Bugün çözülen soru sayısını kaydet:</p>
-                            <div style="display:flex; gap:10px;">
-                                <input type="number" id="question-input" class="input-glass" placeholder="Adet" style="margin:0; min-width:60px;" min="1" max="500">
-                                <button class="btn btn-primary" onclick="addQuestions()">Ekle</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- V11 New: Haftalık Odak Isı Haritası -->
-                <div class="stat-card" style="margin-bottom:20px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                        <h3 style="margin:0;"><i class="fas fa-calendar-check"></i> Haftalık Odaklanma</h3>
-                        <span style="font-size:0.7rem; opacity:0.6;">Son 7 Gün</span>
-                    </div>
-                    <div id="focus-heatmap" style="display:flex; gap:8px; justify-content:center; align-items:center;">
-                        <!-- Injected by JS -->
-                    </div>
-                    <div style="display:flex; justify-content:center; gap:15px; margin-top:10px; font-size:0.65rem; opacity:0.5;">
-                        <span>Düşük</span>
-                        <div style="width:10px; height:10px; background:rgba(0,210,255,0.1); border-radius:2px;"></div>
-                        <div style="width:10px; height:10px; background:rgba(0,210,255,0.4); border-radius:2px;"></div>
-                        <div style="width:10px; height:10px; background:rgba(0,210,255,0.7); border-radius:2px;"></div>
-                        <div style="width:10px; height:10px; background:rgba(0,210,255,1); border-radius:2px;"></div>
-                        <span>Yüksek</span>
-                    </div>
-                </div>
-
-                <!-- V10 New: Sınav Sayacı -->
-                <div id="exam-timer-widget" class="stat-card" style="margin-bottom:20px; border-left: 5px solid #ff4444;">
-                    <!-- Injected by JS -->
-                </div>
-
-                <!-- V9 New: Günün Bilmecesi -->
-                <div class="stat-card" style="background: linear-gradient(135deg, #1a0b2e, #4a154b); border: 2px dashed var(--accent-purple); margin-bottom: 20px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h3 style="margin:0;"><i class="fas fa-brain"></i> Günün Bilmecesi</h3>
-                        <span class="badge" style="background:var(--accent-purple);">+10 XP</span>
-                    </div>
-                    <p style="margin:15px 0; font-style:italic;" id="riddle-question">Yükleniyor...</p>
-                    <div id="riddle-input-group" style="display:flex; gap:10px;">
-                        <input type="text" id="riddle-answer" class="input-glass" style="flex:1;" placeholder="Cevabın?">
-                        <button class="btn btn-primary" onclick="checkRiddle()" style="padding:10px 20px;">Cevapla</button>
-                    </div>
-                </div>
-
-                <!-- V9 New: Ödev Takip Robotu -->
-                <div class="stat-card" style="margin-bottom: 20px; border-left: 5px solid var(--accent-blue);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                        <h3 style="margin:0;"><i class="fas fa-robot"></i> Ödev Takip Robotu</h3>
-                        <button class="btn btn-outline" style="padding:5px 12px; font-size:0.8rem;" onclick="openAssignmentModal()">+ Ödev Ekle</button>
-                    </div>
-                    <div id="assignment-list" style="display:flex; flex-direction:column; gap:10px;">
-                        <p style="opacity:0.5; font-size:0.85rem; text-align:center;">Henüz ödev eklenmedi. Robotun bekliyor! 🤖</p>
-                    </div>
-                </div>
-
-                <!-- Battle Pass Progress -->
-                <div class="battle-pass-container" style="background: var(--glass-bg); border: 1px solid var(--accent-gold); border-radius: 20px; padding: 20px; margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <h3 style="margin:0; color: var(--accent-gold);"><i class="fas fa-star"></i> Savaş Bileti Yolu</h3>
-                        <span style="font-size:0.8rem; opacity:0.7;">Hedefe Ulaş ve Sandığı Aç!</span>
-                    </div>
-                    <div style="width: 100%; height: 12px; background: rgba(0,0,0,0.3); border-radius: 6px; position: relative;">
-                        <div id="battle-pass-fill" style="width: 60%; height: 100%; background: linear-gradient(90deg, #ffd700, #ff8c00); border-radius: 6px; box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);"></div>
-                        <div style="position: absolute; right: -10px; top: -15px; font-size: 1.8rem;">🎁</div>
-                    </div>
-                </div>
-
-                <!-- Exam countdown MOVED TO TOP for visibility -->
-                <div class="exam-countdown-container" id="exam-widget"></div>
-
-                <!-- Compact Mini-Stats Bar -->
                 <div class="mini-stats-bar">
-                    <div class="mini-stat">
-                        <i class="fas fa-bolt"></i>
-                        <div class="mini-stat-info">
-                            <span id="stats-xp">0</span>
-                            <small>XP</small>
-                        </div>
+                    <div style="flex:1; text-align:center;">
+                        <div class="stat-label">Toplam XP</div>
+                        <div class="stat-value" id="stats-xp">0</div>
                     </div>
-                    <div class="mini-stat">
-                        <i class="fas fa-wallet" style="color:#ffd700;"></i>
-                        <div class="mini-stat-info">
-                            <span id="stats-coins">0</span>
-                            <small>Puan</small>
-                        </div>
+                    <div style="flex:1; text-align:center;">
+                        <div class="stat-label">Görev</div>
+                        <div class="stat-value" id="stats-tasks">0</div>
                     </div>
-                    <!-- Daily Progress Circle -->
-                    <div class="daily-goal-mini" onclick="showSection('profile')">
-                        <svg viewBox="0 0 36 36" class="circular-chart gold">
-                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                            <path class="circle" id="daily-progress-path" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                </div>
+
+                <!-- XP Circle Progress -->
+                <div class="stat-card" style="text-align:center; margin-bottom:1.5rem;">
+                    <div style="position:relative; width:160px; height:160px; margin:0 auto;">
+                        <svg viewBox="0 0 36 36" style="width:100%; height:100%; transform: rotate(-90deg);">
+                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="2.5" />
+                            <path id="daily-progress-path" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--accent-blue)" stroke-width="2.5" stroke-dasharray="0, 100" />
                         </svg>
-                        <span id="daily-goal-text">0%</span>
+                        <div id="daily-goal-text" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:2.2rem; font-weight:900;">0%</div>
                     </div>
-                    <div class="mini-stat">
-                        <i class="fas fa-clock"></i>
-                        <div class="mini-stat-info">
-                            <span id="stats-time">0m</span>
-                            <small>Süre</small>
-                        </div>
-                    </div>
-                    <div class="mini-stat">
-                        <i class="fas fa-check-double"></i>
-                        <div class="mini-stat-info">
-                            <span id="stats-tasks">0</span>
-                            <small>Görev</small>
-                        </div>
-                    </div>
+                    <p style="margin-top:10px; font-weight:800; font-size:0.75rem; opacity:0.6; letter-spacing:1px;">GÜNLÜK XP HEDEFİ</p>
                 </div>
 
-                <div class="dashboard-grid">
-                    <div class="stat-card">
-                        <div class="stat-label">Günün Görevleri</div>
-                        <div id="daily-quests-list" class="quest-list"></div>
+                <!-- Battle Pass & Weekly -->
+                <div style="display:flex; flex-direction:column; gap:1rem;">
+                    <div class="stat-card" style="background: linear-gradient(135deg, rgba(157, 80, 187, 0.1), rgba(0, 210, 255, 0.1));">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3>Günün Ödülü</h3>
+                            <span style="font-size: 2rem;">🎁</span>
+                        </div>
+                        <div class="progress-bar-bg" style="height:12px; background:rgba(0,0,0,0.3); border-radius:10px; margin-top:12px; overflow:hidden;">
+                            <div id="battle-pass-fill" style="width:0%; height:100%; background:linear-gradient(to right, var(--accent-blue), var(--accent-purple)); transition: 1s ease;"></div>
+                        </div>
                     </div>
+
                     <div class="stat-card">
-                        <div class="stat-label">Haftalık İlerleme</div>
-                        <div id="weekly-chart" class="svg-chart"></div>
+                        <h3 style="margin-bottom:10px;">Haftalık Gelişim</h3>
+                        <div id="weekly-chart" style="display:flex; align-items:flex-end; gap:8px; height:80px;"></div>
                     </div>
-                </div>
-
-                <div class="badges-row" id="badges-display"></div>
-
-                <!-- Simulated Leaderboard -->
-                <div class="leaderboard-card stat-card">
-                    <div class="stat-label"><i class="fas fa-trophy" style="color:var(--accent-gold);"></i> Haftalık Şampiyonlar</div>
-                    <div id="leaderboard-list"></div>
                 </div>
             </section>
 
-            <!-- Lessons Section -->
-            <section id="lessons" class="section">
+            <!-- V18: Haftalık Ders Programı (Mobil Tablı) -->
+            <section id="timetable" class="section">
                 <div class="header-row">
-                    <h2>Derslerin</h2>
-                    <p>Hangi derse odaklanmak istersin?</p>
+                    <h2>Ders Programım</h2>
+                    <p style="opacity:0.7;">Günün derslerini gir ve takip et!</p>
                 </div>
-                <!-- CRITICAL: Subject grid content will be injected by app.js -->
-                <div class="subject-grid" id="subject-grid"></div>
+                
+                <div class="timetable-day-selector">
+                    <div class="day-tab active" onclick="switchTimetableDay('Pazartesi')">Pzt</div>
+                    <div class="day-tab" onclick="switchTimetableDay('Salı')">Sal</div>
+                    <div class="day-tab" onclick="switchTimetableDay('Çarşamba')">Çar</div>
+                    <div class="day-tab" onclick="switchTimetableDay('Perşembe')">Per</div>
+                    <div class="day-tab" onclick="switchTimetableDay('Cuma')">Cum</div>
+                </div>
+
+                <div class="timetable-grid" id="timetable-grid"></div>
             </section>
 
             <!-- Timer Section -->
             <section id="timer" class="section">
-                <div class="pomodoro-container">
-                    <div class="header-row">
-                        <h2 id="timer-label">Çalışma Zamanı</h2>
-                        <p>Derin bir nefes al ve başla.</p>
+                <div class="header-row" style="text-align:center">
+                    <h2 id="timer-label">Odaklanma Zamanı</h2>
+                </div>
+                <div class="timer-display" id="time-display">25:00</div>
+                <div class="breathing-aura"></div>
+
+                <div class="sound-controls" style="margin-top:1rem; background:rgba(0,0,0,0.2); padding:1.5rem; border-radius:24px; border:1px solid var(--glass-border);">
+                    <h4 style="margin-bottom:15px; font-size:1rem; opacity:0.8; text-align:center;">🎧 Odaklanma Atmosferi</h4>
+                    <div style="display:flex; gap:15px; justify-content:center;">
+                        <div class="audio-btn-circle" onclick="toggleSound('rain')" id="sound-rain">🌧️</div>
+                        <div class="audio-btn-circle" onclick="toggleSound('forest')" id="sound-forest">🌲</div>
+                        <div class="audio-btn-circle" onclick="toggleSound('lofi')" id="sound-lofi">🎹</div>
                     </div>
-                    <div class="timer-display" id="time-display">
-                        <div class="breathing-aura"></div>
-                        25:00
-                    </div>
-                    <!-- Native Audio Engine (Safe) -->
-                    <div class="sound-controls" style="margin-top:2rem; background:var(--glass-bg); padding:1rem; border-radius:20px; border:1px solid var(--glass-border);">
-                        <h4 style="margin-bottom:10px; font-size:1rem; opacity:0.8;">📻 Odaklanma Sesleri</h4>
-                        <div style="display:flex; gap:10px; justify-content:center;">
-                            <button class="btn btn-outline" style="border-radius:50%; width:60px; height:60px; font-size:1.5rem;" onclick="toggleSound('rain')" id="sound-rain" title="Yağmur Sesi">🌧️</button>
-                            <button class="btn btn-outline" style="border-radius:50%; width:60px; height:60px; font-size:1.5rem;" onclick="toggleSound('forest')" id="sound-forest" title="Orman Sesi">🌲</button>
-                            <button class="btn btn-outline" style="border-radius:50%; width:60px; height:60px; font-size:1.5rem;" onclick="toggleSound('lofi')" id="sound-lofi" title="Lofi Frekans">🎧</button>
+                    <audio id="audio-rain" loop preload="none"><source src="https://upload.wikimedia.org/wikipedia/commons/2/23/Rain_on_the_roof_original.ogg" type="audio/ogg"></audio>
+                    <audio id="audio-forest" loop preload="none"><source src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Nature_Ambience.ogg" type="audio/ogg"></audio>
+                    <audio id="audio-lofi" loop preload="none"><source src="https://upload.wikimedia.org/wikipedia/commons/b/b3/Mozart_-_Moonlight_Sonata.ogg" type="audio/ogg"></audio>
+                </div>
+
+                <div class="timer-controls" style="margin:2rem 0; display:flex; gap:10px;">
+                    <button class="btn btn-outline" style="flex:1;" onclick="resetTimer()">Sıfırla</button>
+                    <button class="btn btn-primary" style="flex:2; font-size:1.2rem; height:60px;" onclick="toggleTimer()" id="timer-btn">Başlat</button>
+                </div>
+            </section>
+
+            <!-- Tasks Section -->
+            <section id="tasks" class="section">
+                <div class="header-row"><h2>Görevlerin</h2></div>
+                <div class="task-input-row" style="display:flex; gap:10px;">
+                    <input type="text" id="task-input" class="input-glass" style="margin:0" placeholder="Yeni bir hedef...">
+                    <button class="btn btn-primary" onclick="addTask()">Ekle</button>
+                </div>
+                <div id="task-list" class="task-list" style="margin-top:1.5rem;"></div>
+            </section>
+
+            <!-- Profile & Market Section -->
+            <section id="profile" class="section">
+                <div class="stat-card" style="text-align:center; padding:2rem 1rem;">
+                    <div class="avatar-large" id="profile-avatar" style="width:120px; height:120px; margin:0 auto 15px auto;">👤</div>
+                    <h2 id="username-display-main">Genç Kahraman</h2>
+                    <p id="profile-streak-display" style="color:var(--accent-gold); font-weight:800;">0 Gün Serisi 🔥</p>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:1rem; margin-top:1.5rem;">
+                    <div class="stat-card" onclick="showSection('market')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; border:1px solid var(--accent-gold);">
+                        <div>
+                            <h3 style="color:var(--accent-gold);">Market Yerine Git</h3>
+                            <p style="font-size:0.75rem; opacity:0.7;">Avatarlarını ve eşyalarını seç!</p>
                         </div>
-                        <audio id="audio-rain" loop preload="none"><source src="https://actions.google.com/sounds/v1/water/rain.ogg" type="audio/mpeg"></audio>
-                        <audio id="audio-forest" loop preload="none"><source src="https://actions.google.com/sounds/v1/nature/nature_creatures_ambience_1.ogg" type="audio/mpeg"></audio>
-                        <!-- Using Pixabay verified lofi -->
-                        <audio id="audio-lofi" loop preload="none"><source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3" type="audio/mpeg"></audio>
+                        <div class="coin-display" style="font-size:1.2rem;">🪙 <span id="market-coin-display">0</span></div>
                     </div>
-                    <div class="timer-controls" style="margin-top:20px;">
-                        <button class="btn btn-outline" onclick="resetTimer()">Sıfırla</button>
-                        <button class="btn btn-primary" id="timer-btn" onclick="toggleTimer()">Başlat</button>
+
+                    <div class="stat-card">
+                        <h3>Veri Yönetimi</h3>
+                        <div style="display:flex; gap:10px; margin-top:10px;">
+                            <button class="btn btn-outline" style="flex:1;" onclick="exportData()">Yedekle</button>
+                            <label class="btn btn-primary" style="flex:1; text-align:center; cursor:pointer;">Yükle <input type="file" id="import-file" hidden onchange="importData(this)"></label>
+                        </div>
                     </div>
                 </div>
             </section>
 
             <!-- Market Section -->
             <section id="market" class="section">
-                <div class="header-row">
-                    <h2>Kahraman Pazarı</h2>
-                    <p>XP'lerinle havalı eşyalar al!</p>
-                </div>
-                <div class="market-grid" id="market-grid"></div>
-            </section>
-
-            <!-- V10 New: Ders Kitaplığı -->
-            <section id="library" class="section">
-                <div class="header-row">
-                    <h2>📚 Ders Kitaplığı</h2>
-                    <p>Önemli notlarını ve formüllerini buraya kaydet.</p>
-                </div>
-                <div style="display:flex; flex-direction:column; gap:20px;">
-                    <div class="stat-card">
-                        <textarea id="library-note" class="input-glass" style="width:100%; height:200px; padding:15px;" placeholder="Buraya yaz... (Kaydet butonuna basmayı unutma!)"></textarea>
-                        <div style="display:flex; gap:10px; margin-top:10px;">
-                            <select id="library-subject" class="input-glass" style="flex:1;">
-                                <option value="Matematik">Matematik</option>
-                                <option value="Türkçe">Türkçe</option>
-                                <option value="Fen Bilimleri">Fen Bilimleri</option>
-                                <option value="Sosyal Bilgiler">Sosyal Bilgiler</option>
-                            </select>
-                            <button class="btn btn-primary" onclick="saveLibraryNote()">Kaydet 💾</button>
-                        </div>
+                <div class="header-row"><h2>Market</h2><p>Yeni bir görünüm seç!</p></div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="stat-card market-item-card" onclick="buyItem('👤', 0, this)" style="text-align:center;">
+                        <div style="font-size:3rem; margin-bottom:10px;">👤</div>
+                        <h4 style="font-size:0.9rem;">Klasik</h4>
+                        <div style="background:var(--accent-blue); padding:4px; border-radius:8px; font-size:0.75rem;">Sahipsin</div>
                     </div>
-                    <div id="library-list" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px;">
-                        <!-- Injected by JS -->
+                    <div class="stat-card market-item-card" onclick="buyItem('🐱', 50, this)" style="text-align:center;">
+                        <div style="font-size:3rem; margin-bottom:10px;">🐱</div>
+                        <h4 style="font-size:0.9rem;">Bilge Kedi</h4>
+                        <div style="background:rgba(255,215,0,0.1); color:var(--accent-gold); padding:4px; border-radius:8px; font-size:0.75rem;">🪙 50</div>
+                    </div>
+                    <div class="stat-card market-item-card" onclick="buyItem('🐲', 150, this)" style="text-align:center;">
+                        <div style="font-size:3rem; margin-bottom:10px;">🐲</div>
+                        <h4 style="font-size:0.9rem;">Ejder</h4>
+                        <div style="background:rgba(255,215,0,0.1); color:var(--accent-gold); padding:4px; border-radius:8px; font-size:0.75rem;">🪙 150</div>
+                    </div>
+                    <div class="stat-card market-item-card" onclick="buyItem('👑', 500, this)" style="text-align:center;">
+                        <div style="font-size:3rem; margin-bottom:10px;">👑</div>
+                        <h4 style="font-size:0.9rem;">Kral</h4>
+                        <div style="background:rgba(255,215,0,0.1); color:var(--accent-gold); padding:4px; border-radius:8px; font-size:0.75rem;">🪙 500</div>
                     </div>
                 </div>
-            </section>
-
-            <!-- Profile & Settings Section -->
-            <section id="profile" class="section">
-                <div class="header-row">
-                    <h2>Profilin ve Ayarlar</h2>
-                </div>
-                <div class="profile-full-card stat-card">
-                    <div class="avatar-large animated-pet" id="profile-avatar">👤</div>
-                    <div class="profile-details">
-                        <input type="text" id="username-input" class="input-glass" placeholder="Adını Değiştir">
-                        <button class="btn btn-primary" onclick="updateUsername()">Kaydet</button>
-                    </div>
-                </div>
-                
-                <!-- Start V7 Legendary Badges -->
-                <div class="stat-card" style="margin-bottom: 2rem;">
-                    <h3><i class="fas fa-medal" style="color:var(--accent-gold);"></i> Efsanevi Rozetler Vitrini</h3>
-                    <p style="font-size:0.8rem; opacity:0.7;">Başarılarınla aydınlat!</p>
-                    <div class="legendary-badges" id="legendary-badges-container">
-                        <div class="badge-item" id="badge-nightowl"><div class="badge-icon">🦉</div><div class="badge-title">GECE KUŞU</div></div>
-                        <div class="badge-item" id="badge-mathgenius"><div class="badge-icon">🧮</div><div class="badge-title">TEST DEHASI</div></div>
-                        <div class="badge-item" id="badge-focusmaster"><div class="badge-icon">🧘‍♂️</div><div class="badge-title">ODAK USTASI</div></div>
-                        <div class="badge-item" id="badge-earlybird"><div class="badge-icon">🌅</div><div class="badge-title">ERKENCİ KUŞ</div></div>
-                    </div>
-                </div>
-                <!-- End V7 Badges -->
-
-                <div class="settings-grid">
-                    <!-- V15 Streak Badge Fix -->
-                    <div class="stat-card" style="grid-column: 1 / -1; display:flex; align-items:center; justify-content:space-between;">
-                        <div>
-                            <h3 style="margin:0;">🔥 Gün Serisi</h3>
-                            <p style="font-size:0.8rem; opacity:0.7;">Arka arkaya girdiğin gün sayısı.</p>
-                        </div>
-                        <div style="font-size:2rem; font-weight:900; color:#ff8c00;" id="profile-streak-display">0 Gün</div>
-                    </div>
-                    
-                    <!-- New: Focus Analytics -->
-                    <div class="stat-card" style="grid-column: 1 / -1;">
-                        <h3>Odaklanma Analizi (Bu Hafta)</h3>
-                        <p style="font-size:0.8rem; margin-bottom:1rem; opacity:0.7;">Günlük pomodoro dakikaların.</p>
-                        <div class="svg-chart" id="focus-chart-container" style="display:flex; align-items:flex-end; gap:8px; height:120px;">
-                            <!-- Bars will be generated via JS -->
-                            <div style="flex:1; text-align:center; color:var(--accent-blue);">Henüz veri yok.</div>
-                        </div>
-                    </div>
-                
-                    <div class="stat-card">
-                        <h3>Sınav Takvimi</h3>
-                        <div class="exam-input-row" style="display:flex; gap:10px; flex-wrap:wrap;">
-                            <input type="text" id="exam-name" class="input-glass" placeholder="Ders" style="flex:1;">
-                            <input type="date" id="exam-date" class="input-glass" style="flex:1;">
-                            <button class="btn btn-primary" onclick="addExam()" style="width:100%;">Ekle</button>
-                        </div>
-                        <div id="exam-list" class="exam-list" style="margin-top:10px;"></div>
-                    </div>
-                    <!-- Theme Seçimi (Tasarım İstekleri Gereği Kaldırıldı) -->
-                    <div class="stat-card">
-                        <h3>Veri Yönetimi</h3>
-                        <div style="display:flex; gap:10px; margin-top:1rem;">
-                            <button class="btn btn-outline" onclick="exportData()" style="flex:1;">Yedekle</button>
-                            <label class="btn btn-primary" style="cursor:pointer; flex:1; text-align:center;">
-                                Yükle <input type="file" id="import-file" hidden onchange="importData(this)">
-                            </label>
-                        </div>
-                        <button class="btn btn-outline" onclick="exportPDFReport()" style="width:100%; margin-top:10px; border-color:var(--accent-gold); color:var(--accent-gold);">
-                            <i class="fas fa-file-pdf"></i> Başarı Karnesi İndir
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            <section id="tasks" class="section">
-                <div class="header-row"><h2>Görevlerin</h2></div>
-                <div class="task-input-row">
-                    <input type="text" id="task-input" class="input-glass" placeholder="Yeni görev...">
-                    <button class="btn btn-primary" onclick="addTask()">Ekle</button>
-                </div>
-                <div id="task-list" class="task-list"></div>
-            </section>
-
-            <section id="flashcards" class="section">
-                <div class="header-row"><h2>Kartlarım</h2></div>
-                <div class="card-input-row">
-                    <input type="text" id="card-front" class="input-glass" placeholder="Ön yüz">
-                    <input type="text" id="card-back" class="input-glass" placeholder="Arka yüz">
-                    <button class="btn btn-primary" onclick="addFlashcard()">Ekle</button>
-                </div>
-                <div id="flashcards-grid" class="flashcards-grid"></div>
-            </section>
-
-            <section id="library" class="section">
-                <div class="header-row"><h2>Hızlı Notlar (Kitaplık)</h2></div>
-                <div class="card-input-row" style="display:flex; gap:10px;">
-                    <input type="text" id="library-subject" class="input-glass" placeholder="Başlık (Örn: Matematik Formülü)" style="flex:1;">
-                    <input type="text" id="library-note" class="input-glass" placeholder="Notunuz..." style="flex:2;">
-                    <button class="btn btn-primary" onclick="saveLibraryNote()">Yapıştır</button>
-                </div>
-                <div id="library-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top:20px; padding:20px; background:rgba(0,0,0,0.2); border-radius:12px;"></div>
-            </section>
-
-            <!-- V16: Haftalık Ders Programı -->
-            <section id="timetable" class="section">
-                <div class="header-row" style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <h2>Haftalık Ders Programım</h2>
-                        <p style="opacity:0.7;">Okul programını kaydet, tek tıkla çantayı hazırla!</p>
-                    </div>
-                </div>
-                <div class="timetable-grid" id="timetable-grid">
-                    <!-- Javascript will inject 5 columns here -->
-                </div>
-            </section>
-
-            <!-- V17 Restored Market -->
-            <section id="market" class="section">
-                <div class="header-row" style="display:flex; justify-content:space-between; align-items:center;">
-                    <div><h2>Market Yeri</h2><p>Kazandığın Paraları Burada Harca 💰</p></div>
-                    <div class="coin-display" style="font-size:1.5rem;"><i class="fas fa-coins" style="color:#ffd700"></i> <span id="market-coin-display">0</span></div>
-                </div>
-                <!-- Premium Market CSS implemented inline -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.5rem; margin-top:20px;">
-                    <!-- Klasik -->
-                    <div class="stat-card market-item-card" onclick="buyItem('👤', 0, this)" style="text-align:center; padding:20px; cursor:pointer;">
-                        <div style="font-size:4rem; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); margin-bottom:10px;">👤</div>
-                        <h4 style="margin:5px 0;">Klasik</h4>
-                        <div style="background:var(--accent-blue); color:white; border-radius:10px; padding:5px; font-weight:800; font-size:0.9rem;">Sahipsin</div>
-                    </div>
-                    <!-- Kedi Uzmanı -->
-                    <div class="stat-card market-item-card" onclick="buyItem('🐱', 50, this)" style="text-align:center; padding:20px; cursor:pointer;">
-                        <div style="font-size:4rem; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); margin-bottom:10px;">🐱</div>
-                        <h4 style="margin:5px 0;">Kedi Uzmanı</h4>
-                        <div style="background:rgba(255,215,0,0.2); border:1px solid var(--accent-gold); color:var(--accent-gold); border-radius:10px; padding:5px; font-weight:800; font-size:0.9rem;"><i class="fas fa-coins"></i> 50 DP</div>
-                    </div>
-                    <!-- Ateş Ejderi -->
-                    <div class="stat-card market-item-card" onclick="buyItem('🐲', 150, this)" style="text-align:center; padding:20px; cursor:pointer;">
-                        <div style="font-size:4rem; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); margin-bottom:10px;">🐲</div>
-                        <h4 style="margin:5px 0;">Ateş Ejderi</h4>
-                        <div style="background:rgba(255,215,0,0.2); border:1px solid var(--accent-gold); color:var(--accent-gold); border-radius:10px; padding:5px; font-weight:800; font-size:0.9rem;"><i class="fas fa-coins"></i> 150 DP</div>
-                    </div>
-                    <!-- Uzaylı -->
-                    <div class="stat-card market-item-card" onclick="buyItem('👽', 300, this)" style="text-align:center; padding:20px; cursor:pointer;">
-                        <div style="font-size:4rem; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); margin-bottom:10px;">👽</div>
-                        <h4 style="margin:5px 0;">Uzaylı</h4>
-                        <div style="background:rgba(255,215,0,0.2); border:1px solid var(--accent-gold); color:var(--accent-gold); border-radius:10px; padding:5px; font-weight:800; font-size:0.9rem;"><i class="fas fa-coins"></i> 300 DP</div>
-                    </div>
-                    <!-- Kral Tacı -->
-                    <div class="stat-card market-item-card" onclick="buyItem('👑', 750, this)" style="text-align:center; padding:20px; cursor:pointer;">
-                        <div style="font-size:4rem; filter: drop-shadow(0 10px 10px rgba(255,215,0,0.5)); margin-bottom:10px;">👑</div>
-                        <h4 style="margin:5px 0; color:var(--accent-gold);">İmparator</h4>
-                        <div style="background:rgba(255,215,0,0.2); border:1px solid var(--accent-gold); color:var(--accent-gold); border-radius:10px; padding:5px; font-weight:800; font-size:0.9rem;"><i class="fas fa-coins"></i> 750 DP</div>
-                    </div>
-                </div>
+                <button class="btn btn-outline" style="width:100%; margin-top:1.5rem;" onclick="showSection('profile')">Geri Dön</button>
             </section>
         </main>
     </div>
 
-    <div id="quiz-modal" class="modal">
-        <div class="modal-content stat-card">
-            <span class="close" onclick="closeQuiz()">&times;</span>
-            <div id="quiz-body"></div>
-        </div>
-    </div>
-
-    <!-- Level Up Modal -->
-    <div id="level-up-modal" class="modal">
-        <div class="modal-content stat-card level-up-glow" style="text-align:center;">
-            <div style="font-size: 5rem; margin-bottom: 1rem;">🔥</div>
-            <h2 style="font-size: 2rem; background: linear-gradient(to right, #ffd700, #ff8c00); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">SEVİYE ATLADIN!</h2>
-            <p id="new-level-text" style="font-size: 1.5rem; font-weight: 800; margin: 15px 0;">Seviye 2</p>
-            <p style="opacity:0.7;">Harika gidiyorsun! Yeni eşyalar ve rozetler seni bekliyor.</p>
-            <button class="btn btn-primary" style="margin-top:2rem; width:100%;" onclick="document.getElementById('level-up-modal').classList.remove('show')">TAMAM! 🚀</button>
-        </div>
-    </div>
-
-    <!-- New V7: Daily Reward & Roulette Modal -->
-    <div id="daily-reward-modal" class="modal">
-        <div class="modal-content" style="text-align:center; padding:2rem;">
-            <h2 style="color:var(--accent-gold); font-size:2rem; margin-bottom:10px;">Şans Çarkı! 🎡</h2>
-            <p style="opacity:0.8; margin-bottom:20px;">Öğrenmeye ara vermediğin için hakkın var. Çevir ve kazan!</p>
-            
-            <div style="position: relative; margin: 2rem auto;">
-                <div class="wheel-pointer"></div>
-                <div class="wheel-container" id="roulette-wheel">
-                    <!-- V10: Wheel Segments for text labels -->
-                    <div class="wheel-text" style="transform: rotate(22.5deg)">50 XP</div>
-                    <div class="wheel-text" style="transform: rotate(67.5deg)">20 DP</div>
-                    <div class="wheel-text" style="transform: rotate(112.5deg)">SÜRPRİZ</div>
-                    <div class="wheel-text" style="transform: rotate(157.5deg)">10 XP</div>
-                    <div class="wheel-text" style="transform: rotate(202.5deg)">BOŞ</div>
-                    <div class="wheel-text" style="transform: rotate(247.5deg)">10 DP</div>
-                    <div class="wheel-text" style="transform: rotate(292.5deg)">50 DP</div>
-                    <div class="wheel-text" style="transform: rotate(337.5deg)">100 XP</div>
-                </div>
-            </div>
-
-            <button class="btn btn-primary" id="spin-btn" style="width:100%; padding:15px; font-size:1.1rem; background:linear-gradient(135deg, #ff8c00, #ff0080);" onclick="spinRoulette()">Çarkı Çevir 🚀</button>
-        </div>
-    </div>
-
-    <!-- V9 New: Assignment Modal -->
-    <div id="assignment-modal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeAssignmentModal()">&times;</span>
-            <h2 style="margin-bottom:20px;"><i class="fas fa-robot"></i> Yeni Ödev Ekle</h2>
-            <div style="display:flex; flex-direction:column; gap:15px;">
-                <input type="text" id="assign-name" class="input-glass" placeholder="Ödevin Adı (Örn: Matematik Sayfa 20)">
-                <select id="assign-subject" class="input-glass">
-                    <option value="Matematik">Matematik</option>
-                    <option value="Türkçe">Türkçe</option>
-                    <option value="Fen Bilimleri">Fen Bilimleri</option>
-                    <option value="Sosyal Bilgiler">Sosyal Bilgiler</option>
-                </select>
-                <select id="assign-level" class="input-glass">
-                    <option value="1">Kolay (+10 XP)</option>
-                    <option value="2" selected>Orta (+25 XP)</option>
-                    <option value="3">Zor (+50 XP)</option>
-                </select>
-                <button class="btn btn-primary" style="margin-top:10px;" onclick="addAssignment()">Robota Gönder 🚀</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- PDF Printable Report Container -->
-    <div id="karne-print-container" style="display:none; padding:40px;">
-        <div class="karne-box">
-            <h1 style="text-align:center; color:#333; margin-bottom:10px;">Akıllı Ders Arkadaşım Başarı Karnesi</h1>
-            <p style="text-align:center; font-style:italic; margin-bottom:30px;">"Başarı, her gün tekrarlanan küçük çabaların toplamıdır."</p>
-            <hr style="margin-bottom:20px;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-                <div><strong>Kullanıcı Adı:</strong> <span id="karne-user">Öğrenci</span></div>
-                <div><strong>Tarih:</strong> <span id="karne-date"></span></div>
-            </div>
-            <table style="width:100%; border-collapse:collapse; margin-bottom:20px;">
-                <tr style="background:#eee;">
-                    <th style="border:1px solid #ddd; padding:8px; text-align:left;">Kategori</th>
-                    <th style="border:1px solid #ddd; padding:8px; text-align:center;">Değer</th>
-                </tr>
-                <tr><td style="border:1px solid #ddd; padding:8px;">Mevcut Seviye</td><td style="border:1px solid #ddd; padding:8px; text-align:center;" id="karne-level"></td></tr>
-                <tr><td style="border:1px solid #ddd; padding:8px;">Toplam Toplanan XP</td><td style="border:1px solid #ddd; padding:8px; text-align:center;" id="karne-xp"></td></tr>
-                <tr><td style="border:1px solid #ddd; padding:8px;">Tamamlanan Görevler</td><td style="border:1px solid #ddd; padding:8px; text-align:center;" id="karne-tasks"></td></tr>
-                <tr><td style="border:1px solid #ddd; padding:8px;">Haftalık Odak Süresi</td><td style="border:1px solid #ddd; padding:8px; text-align:center;" id="karne-focus"></td></tr>
-            </table>
-            <div style="text-align:center; font-weight:bold; font-size:1.2rem; color:#2E7D32;">Tebrikler! Mükemmel Gidiyorsun! 🏆</div>
-        </div>
-    </div>
+    <!-- Modals -->
+    <div id="quiz-modal" class="modal"><div class="modal-content"><span class="close" onclick="closeQuiz()">&times;</span><div id="quiz-body"></div></div></div>
+    <div id="level-up-modal" class="modal"><div class="modal-content" style="text-align:center;"><div style="font-size:4rem;">🔥</div><h2>SEVİYE ATLADIN!</h2><p id="new-level-text" style="font-size:1.5rem; font-weight:800; margin:10px 0;">Seviye 2</p><button class="btn btn-primary" style="width:100%; margin-top:20px;" onclick="document.getElementById('level-up-modal').classList.remove('show')">TAMAM!</button></div></div>
 
     <script src="app.js"></script>
 </body>
