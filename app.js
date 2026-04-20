@@ -27,7 +27,8 @@ let state = {
     
     assignments: JSON.parse(localStorage.getItem('study_assignments')) || [],
     lastRiddleDate: localStorage.getItem('study_riddle_date') || "",
-    library: JSON.parse(localStorage.getItem('study_library')) || []
+    library: JSON.parse(localStorage.getItem('study_library')) || [],
+    dailyQuestions: parseInt(localStorage.getItem('study_daily_questions')) || 0
 };
 
 function todayDate() { return new Date().toDateString(); }
@@ -203,6 +204,7 @@ function updateUI() {
     renderQuests();
     renderLeaderboard();
     updateDailyGoalDisplay();
+    updateQuestionRing();
 }
 
 function updateDailyGoalDisplay() {
@@ -241,6 +243,49 @@ function claimBattlePassReward() {
     showToast("Efsanevi Ödül Alındı! +100 XP ve +50 DP Kazandın! 🎁🏆");
     createSparkles(window.innerWidth/2, window.innerHeight/2);
     // Reset daily effort for reward? No, just one claim per day logic in real app, here it stays till reset
+}
+
+function updateQuestionRing() {
+    const countEl = document.getElementById('question-count');
+    const ringEl = document.getElementById('question-ring');
+    if (!countEl || !ringEl) return;
+    
+    const goal = 100;
+    const current = state.dailyQuestions;
+    countEl.innerText = current;
+    
+    // Max visual display constraint at 100%
+    const percentage = Math.min(current / goal, 1);
+    
+    // SVG circle has stroke-dasharray="283"
+    const offset = 283 - (percentage * 283);
+    ringEl.style.strokeDashoffset = offset;
+    
+    if (current >= goal && !state.badges.includes('🎯')) {
+        state.badges.push('🎯');
+        showToast('🎯 Hedef Avcısı Rozeti Açıldı!');
+        localStorage.setItem('study_badges', JSON.stringify(state.badges));
+        renderBadges();
+    }
+}
+
+function addQuestions() {
+    const input = document.getElementById('question-input');
+    if (!input) return;
+    
+    const val = parseInt(input.value);
+    if (!val || val <= 0) {
+        showToast("Lütfen geçerli bir soru sayısı girin! 📚");
+        return;
+    }
+    
+    state.dailyQuestions += val;
+    localStorage.setItem('study_daily_questions', state.dailyQuestions);
+    input.value = '';
+    
+    showToast(`Harika! +${val} soru eklendi. Geleceğine yatırım yaptın! 🚀`);
+    updateQuestionRing();
+    addXP(Math.floor(val * 1.5)); // 1.5 XP per question solved
 }
 
 // Gamified Badge Unlocker (Unified)
@@ -1015,9 +1060,14 @@ function checkStreak() {
     localStorage.setItem('study_streak', state.streak);
     const badge = document.getElementById('streak-badge');
     const count = document.getElementById('streak-count');
+    const profileCount = document.getElementById('profile-streak-display');
+    
     if (badge && count) {
         count.innerText = state.streak;
         badge.className = state.streak > 0 ? 'streak-visible' : 'streak-hidden';
+    }
+    if (profileCount) {
+        profileCount.innerText = `${state.streak} Gün`;
     }
 }
 
