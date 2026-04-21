@@ -186,7 +186,70 @@ function toggleFocusShield() {
     shield.classList.toggle('active');
 }
 
-// --- Core UI & Stats ---
+function addXP(amount, subject = null) {
+    state.xp += amount;
+    state.coins += Math.floor(amount / 2);
+    
+    // Daily XP Sync
+    const today = new Date().toDateString();
+    if (state.dailyXP && state.dailyXP.date === today) {
+        state.dailyXP.amount += amount;
+    } else {
+        state.dailyXP = { date: today, amount: amount };
+    }
+    
+    // Weekly XP Sync
+    const day = new Date().getDay();
+    state.weeklyData[day] += amount;
+    
+    // Subject specific XP (for Levels)
+    if (subject && state.subjectXP[subject] !== undefined) {
+        state.subjectXP[subject] += amount;
+        localStorage.setItem('study_sub_xp', JSON.stringify(state.subjectXP));
+    }
+    
+    localStorage.setItem('study_xp', state.xp);
+    localStorage.setItem('study_coins', state.coins);
+    localStorage.setItem('study_daily_xp', JSON.stringify(state.dailyXP));
+    localStorage.setItem('study_weekly', JSON.stringify(state.weeklyData));
+    
+    updateUI();
+    checkBadges();
+    
+    if (amount >= 50) createSparkles(window.innerWidth / 2, window.innerHeight / 2);
+}
+
+function updateLevel() {
+    const oldLevel = state.level;
+    const newLevel = Math.floor(state.xp / 1000) + 1;
+    if (newLevel > oldLevel) {
+        state.level = newLevel;
+        localStorage.setItem('study_level', state.level);
+        const levelModal = document.getElementById('level-up-modal');
+        const levelText = document.getElementById('new-level-text');
+        if (levelModal && levelText) {
+            levelText.innerText = `Seviye ${newLevel}`;
+            levelModal.classList.add('show');
+            createSparkles(window.innerWidth / 2, window.innerHeight / 2);
+        }
+    }
+}
+
+function createSparkles(x, y) {
+    for (let i = 0; i < 15; i++) {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'sparkle';
+        sparkle.style.left = x + 'px';
+        sparkle.style.top = y + 'px';
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.random() * 100 + 50;
+        sparkle.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+        sparkle.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
+        document.body.appendChild(sparkle);
+        setTimeout(() => sparkle.remove(), 1500);
+    }
+}
+
 function updateUI() {
     const safeSetText = (id, text) => {
         const el = document.getElementById(id);
@@ -205,6 +268,9 @@ function updateUI() {
     safeSetText('username-display', state.username || 'Genç Kahraman'); // Sidebar
     safeSetText('profile-avatar', state.activeAvatar);
     safeSetText('sidebar-avatar', state.activeAvatar);
+    
+    const xpSub = document.getElementById('user-level-sidebar');
+    if (xpSub) xpSub.innerText = `Seviye ${state.level}`;
 
     updateLevel();
     renderBadges();
@@ -215,8 +281,9 @@ function updateUI() {
     updateDailyGoalDisplay();
     updateQuestionRing();
     renderTimetable();
-    renderFlashcards(); // Restored
-    renderLibrary(); // Restored
+    renderFlashcards();
+    renderLibrary();
+    renderSubjectCards(); // Restored V17
 }
 
 function updateDailyGoalDisplay() {
@@ -1026,6 +1093,54 @@ function importData(input) {
 }
 
 // --- Timer & Sound (V17 Native Audio) ---
+// --- V17 Lessons & Subject Modal ---
+const SUBJECTS = [
+    { name: 'Matematik', icon: '🔢', color: 'var(--accent-blue)' },
+    { name: 'Türkçe', icon: '📚', color: '#f44336' },
+    { name: 'Fen Bilimleri', icon: '🧪', color: '#4caf50' },
+    { name: 'Sosyal Bilgiler', icon: '🌍', color: '#ff9800' },
+    { name: 'İngilizce', icon: '🇬🇧', color: '#9c27b0' },
+    { name: 'Din Kültürü', icon: '🌙', color: '#795548' }
+];
+
+function renderSubjectCards() {
+    const container = document.getElementById('subject-cards-grid');
+    if (!container) return;
+    
+    container.innerHTML = SUBJECTS.map(sub => {
+        const xp = state.subjectXP[sub.name] || 0;
+        const level = Math.floor(xp / 50) + 1;
+        return `
+            <div class="stat-card subject-card" onclick="openSubjectModal('${sub.name}', '${sub.icon}')" style="border-bottom: 4px solid ${sub.color};">
+                <div style="font-size:2.5rem; margin-bottom:10px;">${sub.icon}</div>
+                <h4 style="margin:0;">${sub.name}</h4>
+                <div style="font-size:0.7rem; font-weight:800; opacity:0.6; margin-top:5px;">SEVİYE ${level}</div>
+                <div class="progress-bar-bg" style="height:4px; margin-top:8px;">
+                    <div style="width:${(xp%50)*2}%; height:100%; background:${sub.color};"></div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function openSubjectModal(name, icon) {
+    const modal = document.getElementById('subject-modal');
+    document.getElementById('modal-subject-name').innerText = name;
+    document.getElementById('modal-subject-icon').innerText = icon;
+    
+    const studyBtn = document.getElementById('modal-btn-study');
+    const testBtn = document.getElementById('modal-btn-test');
+    
+    studyBtn.onclick = () => { closeSubjectModal(); startSubject(name); };
+    testBtn.onclick = () => { closeSubjectModal(); openQuiz(name); };
+    
+    modal.classList.add('show');
+}
+
+function closeSubjectModal() {
+    document.getElementById('subject-modal').classList.remove('show');
+}
+
 function startSubject(subjectName) {
     showSection('timer');
     document.getElementById('timer-label').innerText = `${subjectName} Çalışması`;

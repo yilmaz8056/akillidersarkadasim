@@ -181,23 +181,8 @@
                     <h2>Branşlar</h2>
                     <p style="opacity:0.7;">Bir ders seç ve odaklanmaya başla!</p>
                 </div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1rem; margin-top:20px;">
-                    <div class="stat-card" onclick="startSubject('Matematik')" style="text-align:center; cursor:pointer; border-bottom: 4px solid var(--accent-blue);">
-                        <div style="font-size:3rem; margin-bottom:10px;">🔢</div>
-                        <h4>Matematik</h4>
-                    </div>
-                    <div class="stat-card" onclick="startSubject('Türkçe')" style="text-align:center; cursor:pointer; border-bottom: 4px solid #f44336;">
-                        <div style="font-size:3rem; margin-bottom:10px;">📚</div>
-                        <h4>Türkçe</h4>
-                    </div>
-                    <div class="stat-card" onclick="startSubject('Fen Bilimleri')" style="text-align:center; cursor:pointer; border-bottom: 4px solid #4caf50;">
-                        <div style="font-size:3rem; margin-bottom:10px;">🧪</div>
-                        <h4>Fen</h4>
-                    </div>
-                    <div class="stat-card" onclick="startSubject('İngilizce')" style="text-align:center; cursor:pointer; border-bottom: 4px solid #9c27b0;">
-                        <div style="font-size:3rem; margin-bottom:10px;">🇬🇧</div>
-                        <h4>İngilizce</h4>
-                    </div>
+                <div id="subject-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; margin-top:20px;">
+                    <!-- Injected by renderSubjectCards() -->
                 </div>
             </section>
 
@@ -343,8 +328,30 @@
     </div>
 
     <!-- Modals -->
+    <div id="subject-modal" class="modal">
+        <div class="modal-content" style="text-align:center;">
+            <span class="close" onclick="closeSubjectModal()">&times;</span>
+            <div id="modal-subject-icon" style="font-size:4rem; margin-bottom:1rem;">🔢</div>
+            <h2 id="modal-subject-name">Matematik</h2>
+            <p style="opacity:0.7; margin-bottom:1.5rem;">Bugün bu ders için ne yapmak istersin?</p>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <button class="btn btn-primary" id="modal-btn-study" style="height:60px; font-size:1.1rem;">✍️ Odaklanma Başlat (25dk)</button>
+                <button class="btn btn-outline" id="modal-btn-test" style="height:60px; font-size:1.1rem; border-color:var(--accent-blue); color:var(--accent-blue);">🧠 Test Çöz (10 Soru)</button>
+            </div>
+        </div>
+    </div>
+
     <div id="quiz-modal" class="modal"><div class="modal-content"><span class="close" onclick="closeQuiz()">&times;</span><div id="quiz-body"></div></div></div>
     <div id="level-up-modal" class="modal"><div class="modal-content" style="text-align:center;"><div style="font-size:4rem;">🔥</div><h2>SEVİYE ATLADIN!</h2><p id="new-level-text" style="font-size:1.5rem; font-weight:800; margin:10px 0;">Seviye 2</p><button class="btn btn-primary" style="width:100%; margin-top:20px;" onclick="document.getElementById('level-up-modal').classList.remove('show')">TAMAM!</button></div></div>
+    <div id="daily-reward-modal" class="modal">
+        <div class="modal-content" style="text-align:center;">
+            <h2>🎁 Günlük Hediye!</h2>
+            <div class="wheel-container" id="roulette-wheel">
+                <span>🎁</span>
+            </div>
+            <button class="btn btn-primary" style="width:100%;" onclick="spinRoulette()">Çarkı Çevir!</button>
+        </div>
+    </div>
 
     <script src="app.js"></script>
 </body>
