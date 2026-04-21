@@ -202,7 +202,9 @@ function updateUI() {
     safeSetText('coin-count-top', state.coins); // V18
     safeSetText('user-name-title', state.username || 'Genç Kahraman'); // Mobile Dashboard
     safeSetText('username-display-main', state.username || 'Genç Kahraman'); // Profile
+    safeSetText('username-display', state.username || 'Genç Kahraman'); // Sidebar
     safeSetText('profile-avatar', state.activeAvatar);
+    safeSetText('sidebar-avatar', state.activeAvatar);
 
     updateLevel();
     renderBadges();
@@ -213,6 +215,8 @@ function updateUI() {
     updateDailyGoalDisplay();
     updateQuestionRing();
     renderTimetable();
+    renderFlashcards(); // Restored
+    renderLibrary(); // Restored
 }
 
 function updateDailyGoalDisplay() {
@@ -1436,12 +1440,144 @@ function saveTimetable() {
     localStorage.setItem('study_timetable', JSON.stringify(state.timetable));
 }
 
+// --- V19 Restored Riddle & Buddy & Tips ---
+function loadRiddle() {
+    const qEl = document.getElementById('riddle-q');
+    const statusEl = document.getElementById('riddle-status');
+    if (!qEl) return;
+
+    const riddleId = localStorage.getItem('study_riddle_id') || 0;
+    const isTodayDone = localStorage.getItem('study_riddle_date') === new Date().toDateString();
+
+    if (isTodayDone) {
+        qEl.innerText = "Bugünkü bilmeceyi çözdün! Yarın yenisi için geri gel. 🏆";
+        statusEl.innerText = "TAMAMLANDI";
+        statusEl.style.background = "#4caf50";
+        document.getElementById('riddle-ans').disabled = true;
+    } else {
+        const riddle = RIDDLES[riddleId % RIDDLES.length];
+        qEl.innerText = riddle.q;
+    }
+}
+
+function checkRiddle() {
+    const input = document.getElementById('riddle-ans').value.toLowerCase().trim();
+    const riddleId = parseInt(localStorage.getItem('study_riddle_id') || 0);
+    const riddle = RIDDLES[riddleId % RIDDLES.length];
+
+    if (input === riddle.a) {
+        addXP(50);
+        state.coins += 20;
+        localStorage.setItem('study_riddle_date', new Date().toDateString());
+        localStorage.setItem('study_riddle_id', riddleId + 1);
+        showToast("Doğru Cevap! +50 XP ve +20 DP Kazandın! 🧠🎉");
+        loadRiddle();
+        updateUI();
+    } else {
+        showToast("Yanlış cevap, tekrar dene! 🤔");
+    }
+}
+
+function updateDailyTip() {
+    const tipEl = document.getElementById('daily-tip-text');
+    if (!tipEl) return;
+    const tipIndex = Math.floor(Date.now() / 86400000) % DAILY_TIPS.length;
+    tipEl.innerText = DAILY_TIPS[tipIndex];
+}
+
+// --- V19 Restored Flashcards & Library ---
+function renderFlashcards() {
+    const grid = document.getElementById('flashcards-grid');
+    if (!grid) return;
+    grid.innerHTML = state.flashcards.map((card, idx) => `
+        <div class="flashcard-container" id="card-${idx}">
+            <div class="flashcard-inner" onclick="flipCard(${idx})">
+                <div class="flashcard-front">
+                    <span style="font-size:0.7rem; opacity:0.6; margin-bottom:10px;">Soru</span>
+                    <p style="padding:0 20px;">${card.front}</p>
+                </div>
+                <div class="flashcard-back">
+                    <span style="font-size:0.7rem; opacity:0.6; margin-bottom:10px;">Cevap</span>
+                    <p style="padding:0 20px;">${card.back}</p>
+                    <div class="srs-controls" onclick="event.stopPropagation()">
+                        <button class="srs-btn srs-zor" onclick="rateCard(${idx}, 'zor')">Zor</button>
+                        <button class="srs-btn srs-orta" onclick="rateCard(${idx}, 'orta')">Orta</button>
+                        <button class="srs-btn srs-kolay" onclick="rateCard(${idx}, 'kolay')">Kolay</button>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-delete-mini" onclick="deleteFlashcard(${idx})">×</button>
+        </div>
+    `).join('');
+}
+
+function addFlashcard() {
+    const front = document.getElementById('card-front').value.trim();
+    const back = document.getElementById('card-back').value.trim();
+    if (front && back) {
+        state.flashcards.push({ front, back, level: 0, lastReview: Date.now() });
+        saveState();
+        showSection('flashcards');
+        updateUI();
+        showToast("Kart başarıyla eklendi! 📚");
+        document.getElementById('card-front').value = '';
+        document.getElementById('card-back').value = '';
+    }
+}
+
+function deleteFlashcard(idx) {
+    state.flashcards.splice(idx, 1);
+    saveState();
+    updateUI();
+}
+
+function flipCard(idx) {
+    document.getElementById(`card-${idx}`).classList.toggle('flipped');
+}
+
+function rateCard(idx, level) {
+    showToast(`Kart puanlandı: ${level.toUpperCase()}`);
+    flipCard(idx);
+    // SRS logic would go here in full implementation
+}
+
+function renderLibrary() {
+    const list = document.getElementById('library-list');
+    if (!list) return;
+    list.innerHTML = state.library.map((note, idx) => `
+        <div class="stat-card" style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <h4 style="margin:0;">${note.title}</h4>
+                <p style="font-size:0.8rem; opacity:0.7; margin-top:5px;">${note.content.substring(0,50)}...</p>
+            </div>
+            <button class="btn btn-outline" style="padding:5px 12px; font-size:0.8rem;" onclick="deleteLibraryNote(${idx})">Sil</button>
+        </div>
+    `).join('');
+}
+
+function saveLibraryNote() {
+    const title = document.getElementById('library-title').value.trim();
+    const content = document.getElementById('library-content').value.trim();
+    if (title && content) {
+        state.library.push({ title, content, date: new Date().toLocaleDateString() });
+        saveState();
+        updateUI();
+        document.getElementById('library-title').value = '';
+        document.getElementById('library-content').value = '';
+        showToast("Not kitaplığa kaydedildi! ✍️");
+    }
+}
+
+function deleteLibraryNote(idx) {
+    state.library.splice(idx, 1);
+    saveState();
+    updateUI();
+}
+
 // Initial Boot Load
 window.onload = function() {
     updateUI();
     checkStreak();
-    setTimeout(updateDailyTip, 1000);
-    renderLibrary();
-    // Assuming loadRiddle exists or safely ignoring
-    if (typeof loadRiddle === 'function') loadRiddle();
+    updateDailyTip();
+    loadRiddle();
 };

@@ -29,14 +29,11 @@ body { background: var(--bg-gradient); background-attachment: fixed; min-height:
 main { width: 100%; max-width: 100%; }
 
 .app-container { 
-    display: flex; 
-    flex-direction: column; 
+    display: grid; 
+    grid-template-columns: 280px 1fr; 
     height: 100vh; 
-    max-width: 480px; 
-    margin: 0 auto; 
     background: var(--bg-gradient); 
     position: relative;
-    box-shadow: 0 0 50px rgba(0,0,0,0.5);
     overflow: hidden;
 }
 
@@ -46,53 +43,48 @@ body.theme-gold { --bg-gradient: linear-gradient(135deg, #111111 0%, #3a3014 50%
 
 /* Nav (Bottom Bar) */
 aside { 
-    position: fixed; 
-    bottom: 0; 
-    left: 0; 
-    right: 0; 
-    height: 70px; 
-    background: rgba(15, 12, 41, 0.95); 
-    backdrop-filter: blur(20px); 
-    border-top: 1px solid var(--glass-border); 
-    padding: 0 10px; 
-    z-index: 3000; 
+    background: rgba(0, 0, 0, 0.2); 
+    backdrop-filter: blur(10px); 
+    border-right: 1px solid var(--glass-border); 
+    padding: 2rem; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: space-between; 
+    transition: all 0.3s ease; 
+    z-index: 3000;
+}
+.logo-section h1 { 
+    font-size: 1.5rem; 
+    font-weight: 800; 
+    background: linear-gradient(to right, var(--accent-blue), var(--accent-purple)); 
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent; 
+}
+nav ul { list-style: none; padding: 0; }
+nav ul li { 
+    padding: 1rem; 
+    margin-bottom: 0.5rem; 
+    border-radius: 12px; 
+    cursor: pointer; 
+    transition: 0.3s; 
     display: flex; 
     align-items: center; 
-    justify-content: center;
+    gap: 12px; 
+    color: var(--text-secondary); 
 }
-.logo-section, .profile-card, .desktop-only { display: none !important; }
-nav { width: 100%; }
-nav ul { 
-    display: flex; 
-    justify-content: space-around; 
-    width: 100%; 
-    margin: 0; 
-    overflow-x: auto; 
-    gap: 10px; 
-    scrollbar-width: none;
+nav ul li.active { 
+    background: var(--glass-bg); 
+    border: 1px solid var(--glass-border); 
+    color: var(--text-primary); 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
 }
-nav ul::-webkit-scrollbar { display: none; }
-nav ul li { 
-    flex-direction: column; 
-    gap: 4px; 
-    padding: 8px 5px; 
-    font-size: 0.65rem; 
-    text-align: center; 
-    color: var(--text-secondary);
-    min-width: 60px;
-    border-radius: 0;
-    margin-bottom: 0;
-}
-nav ul li i { font-size: 1.4rem; }
-nav ul li.active { background: transparent; border: none; color: var(--accent-blue); }
 
 /* Main Content Area */
 main { 
-    flex: 1; 
-    padding: 1.5rem; 
+    padding: 2.5rem; 
     overflow-y: auto; 
-    padding-bottom: 100px !important; 
-    width: 100%;
+    position: relative; 
+    scroll-behavior: smooth; 
 }
 .section { display: none !important; }
 .section.active { display: block !important; animation: slideUp 0.4s ease; }
@@ -291,11 +283,48 @@ body.zen-mode .breathing-aura { display: block; }
     50% { transform: translate(-50%, -50%) scale(2.0); opacity: 0.8; }
 }
 @media (max-width: 900px) {
-    .app-container { max-width: 100%; width: 100%; border-radius: 0; box-shadow: none; }
+    .app-container { grid-template-columns: 1fr; }
     .mobile-top-bar { display: flex !important; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: rgba(15, 12, 41, 0.95); backdrop-filter: blur(15px); border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 2500; }
     .logo-text { font-weight: 800; font-size: 1.1rem; background: linear-gradient(to right, var(--accent-blue), var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     
-    main { padding: 1.2rem; padding-bottom: 100px !important; }
+    aside { 
+        position: fixed; 
+        bottom: 0px; 
+        left: 0px; 
+        right: 0px; 
+        height: 75px; 
+        flex-direction: row; 
+        padding: 0 10px; 
+        z-index: 3000; 
+        background: rgba(15, 12, 41, 0.95); 
+        backdrop-filter: blur(20px); 
+        border-top: 1px solid var(--glass-border); 
+        border-right: none;
+    }
+    nav { width: 100%; }
+    nav ul { 
+        display: flex; 
+        justify-content: space-around; 
+        width: 100%; 
+        margin: 0; 
+        overflow-x: auto; 
+        gap: 10px; 
+        scrollbar-width: none;
+    }
+    nav ul::-webkit-scrollbar { display: none; }
+    nav ul li { 
+        flex-direction: column; 
+        gap: 4px; 
+        padding: 5px; 
+        font-size: 0.65rem; 
+        text-align: center;
+        min-width: 60px;
+    }
+    nav ul li span { display: block; }
+    nav ul li i { font-size: 1.3rem; }
+    nav ul li.active { background: transparent; border: none; color: var(--accent-blue); box-shadow: none; }
+
+    main { padding: 1rem; padding-bottom: 100px !important; }
 }
 /* V12: Focus Shield Styling */
 .focus-shield-overlay {
