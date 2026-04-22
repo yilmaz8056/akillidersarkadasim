@@ -33,6 +33,30 @@ const QUIZ_BANK = {
             { q: 'Hangisi bir isim tamlamasıdır?', a: ['Mavi ev', 'Kapı kolu', 'Güzel çocuk'], c: 1 },
             { q: 'Nokta nerede kullanılır?', a: ['Soru sorarken', 'Cümle sonunda', 'Heyecanlanınca'], c: 1 }
         ]
+    },
+    'Fen Bilimleri': {
+        1: [
+            { q: 'Dünya\'nın uydusu hangisidir?', a: ['Güneş', 'Ay', 'Mars', 'Venüs'], c: 1 },
+            { q: 'Isı ölçmeye ne denir?', a: ['Barometre', 'Termometre', 'Metre', 'Hızölçer'], c: 1 }
+        ]
+    },
+    'Sosyal Bilgiler': {
+        1: [
+            { q: 'Türkiye\'nin başkenti neresidir?', a: ['İstanbul', 'Ankara', 'Bursa', 'İzmir'], c: 1 },
+            { q: 'Pusulanın renkli ucu nereyi gösterir?', a: ['Güney', 'Doğu', 'Kuzey', 'Batı'], c: 2 }
+        ]
+    },
+    'İngilizce': {
+        1: [
+            { q: '"Apple" Türkçesi nedir?', a: ['Armut', 'Elma', 'Üzüm', 'Vişne'], c: 1 },
+            { q: '"Hello" ne demektir?', a: ['Güle güle', 'Merhaba', 'Nasılsın', 'Hoşçakal'], c: 1 }
+        ]
+    },
+    'Din Kültürü': {
+        1: [
+            { q: 'İslamın şartı kaçtır?', a: ['3', '4', '5', '6'], c: 2 },
+            { q: 'Kur\'an-ı Kerim hangi peygambere indirilmiştir?', a: ['Hz. İsa', 'Hz. Musa', 'Hz. Muhammed', 'Hz. Adem'], c: 2 }
+        ]
     }
 };
 
@@ -60,6 +84,8 @@ let state = {
     quests: JSON.parse(localStorage.getItem('study_quests')) || { date: '', active: [] },
     dailyXP: JSON.parse(localStorage.getItem('study_daily_xp')) || { date: '', amount: 0 },
     dailyQuestions: Number(localStorage.getItem('study_daily_q')) || 0,
+    activeTimetableDay: 'Pazartesi',
+    timetable: JSON.parse(localStorage.getItem('study_timetable')) || { 'Pazartesi': [], 'Salı': [], 'Çarşamba': [], 'Perşembe': [], 'Cuma': [] },
     theme: localStorage.getItem('study_theme') || 'default'
 };
 
@@ -142,7 +168,9 @@ function renderSubjectCards() {
         { name: 'Matematik', icon: '🔢', color: '#00d2ff' },
         { name: 'Türkçe', icon: '📚', color: '#f44336' },
         { name: 'Fen Bilimleri', icon: '🧪', color: '#4caf50' },
-        { name: 'Sosyal Bilgiler', icon: '🌍', color: '#ff9800' }
+        { name: 'Sosyal Bilgiler', icon: '🌍', color: '#ff9800' },
+        { name: 'İngilizce', icon: '🇬🇧', color: '#9c27b0' },
+        { name: 'Din Kültürü', icon: '🌙', color: '#795548' }
     ];
     grid.innerHTML = subs.map(s => `
         <div class="stat-card subject-card" onclick="openSubjectModal('${s.name}', '${s.icon}')" style="border-bottom: 4px solid ${s.color};">
@@ -222,7 +250,45 @@ function renderFlashcards() {
 
 function renderTimetable() {
     const grid = document.getElementById('timetable-grid');
-    if (grid) grid.innerHTML = `<div style="padding:15px; opacity:0.7;">${state.activeTimetableDay} Programı Yüklendi. 🚀</div>`;
+    if (!grid) return;
+    const dayData = state.timetable[state.activeTimetableDay] || [];
+    
+    // Ensure 5 slots
+    let slotsHtml = "";
+    for (let i = 0; i < 5; i++) {
+        const val = dayData[i] || "";
+        slotsHtml += `
+            <div class="timetable-slot">
+                <span style="font-weight:800; color:var(--accent-blue); min-width:20px;">${i+1}</span>
+                <input type="text" class="timetable-input" placeholder="Ders adı..." 
+                    value="${val}" 
+                    onchange="updateTimetable(${i}, this.value)">
+            </div>
+        `;
+    }
+    
+    grid.innerHTML = `
+        <div class="timetable-col active">
+            <div class="timetable-day-header">${state.activeTimetableDay}</div>
+            ${slotsHtml}
+        </div>
+    `;
+}
+
+function updateTimetable(index, value) {
+    if (!state.timetable[state.activeTimetableDay]) {
+        state.timetable[state.activeTimetableDay] = [];
+    }
+    state.timetable[state.activeTimetableDay][index] = value;
+    localStorage.setItem('study_timetable', JSON.stringify(state.timetable));
+}
+
+function switchTimetableDay(day) {
+    state.activeTimetableDay = day;
+    document.querySelectorAll('.day-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.innerText.toLowerCase().includes(day.substring(0,2).toLowerCase()));
+    });
+    renderTimetable();
 }
 
 function renderBadges() {
@@ -355,15 +421,136 @@ function openSubjectModal(name, icon) {
     if (m) {
         document.getElementById('modal-subject-name').innerText = name;
         document.getElementById('modal-subject-icon').innerText = icon;
+        
+        // Wire up buttons
+        document.getElementById('modal-btn-study').onclick = () => {
+            closeSubjectModal();
+            showSection('timer');
+        };
+        document.getElementById('modal-btn-test').onclick = () => {
+            closeSubjectModal();
+            openQuiz(name);
+        };
+        
         m.classList.add('show');
     }
 }
 function closeSubjectModal() { document.getElementById('subject-modal').classList.remove('show'); }
 
-// --- 6. AUDIO ENGINE (V26 Robust) ---
+// --- QUIZ SYSTEM ---
+let currentQuiz = { subject: '', qIndex: 0, score: 0 };
+
+function openQuiz(subject) {
+    const quizData = QUIZ_BANK[subject] && QUIZ_BANK[subject][1];
+    if (!quizData) {
+        showToast("Bu branş için henüz soru eklenmedi! 🚧");
+        return;
+    }
+    
+    currentQuiz = { subject, qIndex: 0, score: 0 };
+    showSection('dashboard'); // fallback
+    const modal = document.getElementById('quiz-modal');
+    if (modal) {
+        modal.classList.add('show');
+        renderQuizQuestion();
+    }
+}
+
+function renderQuizQuestion() {
+    const quizData = QUIZ_BANK[currentQuiz.subject][1];
+    const q = quizData[currentQuiz.qIndex];
+    if (!q) return;
+
+    const body = document.getElementById('quiz-body');
+    body.innerHTML = `
+        <div style="text-align:center; margin-bottom:20px;">
+            <span style="background:var(--accent-blue); padding:5px 15px; border-radius:20px; font-size:0.8rem; font-weight:800;">SORU ${currentQuiz.qIndex + 1} / ${quizData.length}</span>
+        </div>
+        <h3 style="margin-bottom:20px; line-height:1.5;">${q.q}</h3>
+        <div style="display:grid; gap:10px;">
+            ${q.a.map((ans, i) => `
+                <button class="btn btn-outline quiz-ans-btn" style="justify-content:flex-start; text-align:left; padding:15px;" onclick="checkQuizAnswer(${i})">
+                    ${ans}
+                </button>
+            `).join('')}
+        </div>
+    `;
+}
+
+function checkQuizAnswer(index) {
+    const quizData = QUIZ_BANK[currentQuiz.subject][1];
+    const q = quizData[currentQuiz.qIndex];
+    
+    if (index === q.c) {
+        currentQuiz.score++;
+        showToast("Doğru! 🌟");
+    } else {
+        showToast("Yanlış! 😅");
+    }
+    
+    currentQuiz.qIndex++;
+    if (currentQuiz.qIndex < quizData.length) {
+        renderQuizQuestion();
+    } else {
+        finishQuiz();
+    }
+}
+
+function finishQuiz() {
+    const xpGained = currentQuiz.score * 20;
+    const coinsGained = currentQuiz.score * 10;
+    addXP(xpGained, currentQuiz.subject);
+    state.coins += coinsGained;
+    localStorage.setItem('study_coins', state.coins);
+    
+    const body = document.getElementById('quiz-body');
+    body.innerHTML = `
+        <div style="text-align:center; padding:20px;">
+            <div style="font-size:4rem; margin-bottom:20px;">🏆</div>
+            <h2>Tebrikler!</h2>
+            <p>Testi tamamladın. Skorun: ${currentQuiz.score} / ${QUIZ_BANK[currentQuiz.subject][1].length}</p>
+            <div style="background:rgba(255,255,255,0.05); padding:20px; border-radius:20px; margin:20px 0;">
+                <div style="color:var(--accent-blue); font-weight:800;">+${xpGained} XP</div>
+                <div style="color:var(--accent-gold); font-weight:800;">+${coinsGained} DP</div>
+            </div>
+            <button class="btn btn-primary" style="width:100%;" onclick="closeQuiz()">Harika!</button>
+        </div>
+    `;
+}
+
+function closeQuiz() { 
+    document.getElementById('quiz-modal').classList.remove('show'); 
+    updateUI();
+}
+
+// --- 6. AUDIO ENGINE (V26 Restored) ---
 const AudioEngine = {
-    play(type) { showToast(`${type.toUpperCase()} çalıyor... 🎵`); },
-    stop() { showToast("Müzik durduruldu."); }
+    play(type) {
+        // Pause all first
+        ['rain', 'forest', 'lofi'].forEach(t => {
+            const el = document.getElementById(`audio-${t}`);
+            const btn = document.getElementById(`sound-${t}`);
+            if (el) el.pause();
+            if (btn) btn.classList.remove('active');
+        });
+
+        const player = document.getElementById(`audio-${type}`);
+        const btn = document.getElementById(`sound-${type}`);
+        if (player) {
+            player.play().catch(e => console.warn("Audio play blocked:", e));
+            if (btn) btn.classList.add('active');
+            showToast(`${type.toUpperCase()} Atmosferi Aktif! 🎧`);
+        }
+    },
+    stop() {
+        ['rain', 'forest', 'lofi'].forEach(t => {
+            const el = document.getElementById(`audio-${t}`);
+            const btn = document.getElementById(`sound-${t}`);
+            if (el) el.pause();
+            if (btn) btn.classList.remove('active');
+        });
+        showToast("Sesler durduruldu.");
+    }
 };
 function toggleSound(t) { AudioEngine.play(t); }
 
